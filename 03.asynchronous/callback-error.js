@@ -5,7 +5,14 @@ const db = new sqlite3.Database(":memory:");
 function createTable(callback) {
   db.run(
     "CREATE TABLE books (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL UNIQUE)",
-    callback,
+    (err) => {
+      if (err) {
+        console.error("Error creating table:", err.message);
+        return callback(err);
+      }
+      console.log("Table created");
+      callback(null);
+    },
   );
 }
 
