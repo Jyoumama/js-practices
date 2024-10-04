@@ -1,72 +1,29 @@
 import sqlite3 from "sqlite3";
-
 const db = new sqlite3.Database(":memory:");
 
-function createTable(callback) {
-  db.run(
-    "CREATE TABLE books (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL UNIQUE)",
-    (err) => {
-      if (err) {
-        console.error("Error creating table:", err.message);
-        return callback(err);
-      }
-      console.log("Table created");
-      callback(null);
-    },
-  );
-}
+db.run(
+  "CREATE TABLE books (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL UNIQUE)",
+  () => {
+    console.log("Table created");
 
-function insertRecord(title, callback) {
-  db.run("INSERT INTO books (title) VALUES (?)", [title], function (err) {
-    if (err) {
-      console.error("Error inserting record:", err.message);
-      return callback(err);
-    }
-    console.log("Inserted record with ID:", this.lastID);
-    callback(null);
-  });
-}
+    db.run("INSERT INTO books (title) VALUES (?)", ["Book 1"], function () {
+      console.log("Inserted record with ID:", this.lastID);
 
-function getRecords(callback) {
-  db.all("SELECT * FROM books", (err, rows) => {
-    if (err) {
-      console.error("Error fetching records:", err.message);
-      return callback(err);
-    }
-    console.log("Records:", rows);
-    callback(null);
-  });
-}
+      db.run("INSERT INTO books (title) VALUES (?)", ["Book 2"], function () {
+        console.log("Inserted record with ID:", this.lastID);
 
-function deleteTable(callback) {
-  db.run("DROP TABLE books", (err) => {
-    if (err) {
-      console.error("Error deleting table:", err.message);
-      return callback(err);
-    }
-    console.log("Table deleted");
-    callback(null);
-  });
-}
+        db.all("SELECT * FROM books", (err, rows) => {
+          console.log("Records:", rows);
 
-createTable((err) => {
-  if (err) return;
+          db.run("DROP TABLE books", () => {
+            console.log("Table deleted");
 
-  insertRecord("Book 1", (err) => {
-    if (err) return;
-
-    insertRecord("Book 2", (err) => {
-      if (err) return;
-
-      getRecords((err) => {
-        if (err) return;
-
-        deleteTable((err) => {
-          if (err) return;
-
-          db.close();
+            db.close(() => {
+              console.log("Database closed");
+            });
+          });
         });
       });
     });
-  });
-});
+  },
+);
