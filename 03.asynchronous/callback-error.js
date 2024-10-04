@@ -1,67 +1,56 @@
 import sqlite3 from "sqlite3";
-
 const db = new sqlite3.Database(":memory:");
 
-function createTable(callback) {
-  db.run(
-    "CREATE TABLE books (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL UNIQUE)",
-    (err) => {
-      if (err) {
-        console.error("Error creating table:", err.message);
-        return callback(err);
-      }
-      console.log("Table created");
-      callback(null);
-    },
-  );
-}
-
-function insertRecord(title, callback) {
-  db.run("INSERT INTO books (title) VALUES (?)", [title], function (err) {
+db.run(
+  "CREATE TABLE books (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL UNIQUE)",
+  (err) => {
     if (err) {
-      return callback(err);
+      console.error("Error creating table:", err.message);
+      return;
     }
-    console.log("Inserted record with ID:", this.lastID);
-    callback(null);
-  });
-}
+    console.log("Table created");
 
-function getInvalidRecords(callback) {
-  db.all("SELECT * FROM non_existent_table", callback);
-}
-
-function deleteTable(callback) {
-  db.run("DROP TABLE books", (err) => {
-    if (err) {
-      return callback(err);
-    }
-    console.log("Table deleted");
-    callback(null);
-  });
-}
-
-createTable((err) => {
-  if (err) return;
-
-  insertRecord("Book 1", (err) => {
-    if (err) return;
-
-    insertRecord("Book 1", (err) => {
+    db.run("INSERT INTO books (title) VALUES (?)", ["Book 1"], function (err) {
       if (err) {
-        console.error("Error inserting duplicate record:", err.message);
+        console.error("Error inserting record:", err.message);
+        return;
       }
+      console.log("Inserted record with ID:", this.lastID);
 
-      getInvalidRecords((err) => {
-        if (err) {
-          console.error("Error fetching from non-existent table:", err.message);
-        }
+      db.run(
+        "INSERT INTO books (title) VALUES (?)",
+        ["Book 1"],
+        function (err) {
+          if (err) {
+            console.error("Error inserting duplicate record:", err.message);
+          }
 
-        deleteTable((err) => {
-          if (err) return;
+          db.all("SELECT * FROM non_existent_table", (err) => {
+            if (err) {
+              console.error(
+                "Error fetching from non-existent table:",
+                err.message,
+              );
+            }
 
-          db.close();
-        });
-      });
+            db.run("DROP TABLE books", (err) => {
+              if (err) {
+                console.error("Error deleting table:", err.message);
+                return;
+              }
+              console.log("Table deleted");
+
+              db.close((err) => {
+                if (err) {
+                  console.error("Error closing database:", err.message);
+                  return;
+                }
+                console.log("Database closed");
+              });
+            });
+          });
+        },
+      );
     });
-  });
-});
+  },
+);
