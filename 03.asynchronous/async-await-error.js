@@ -11,14 +11,13 @@ async function main() {
     );
     console.log("Table created");
 
-    try {
-      const result1 = await runAsync(
-        db,
-        "INSERT INTO books (title) VALUES (?)",
-        ["Book 1"],
-      );
-      console.log("Inserted record with ID:", result1.lastID);
+    const result1 = await runAsync(db, "INSERT INTO books (title) VALUES (?)", [
+      "Book 1",
+    ]);
+    console.log("Inserted record with ID:", result1.lastID);
 
+    try {
+      console.log("Attempting to insert duplicate record...");
       await runAsync(db, "INSERT INTO books (title) VALUES (?)", ["Book 1"]);
     } catch (err) {
       if (err.message.includes("SQLITE_CONSTRAINT")) {
@@ -43,8 +42,12 @@ async function main() {
   } catch (err) {
     console.error("Unexpected error:", err.message);
   } finally {
-    await closeAsync(db);
-    console.log("Database closed");
+    try {
+      await closeAsync(db);
+      console.log("Database closed");
+    } catch (closeErr) {
+      console.error("Error closing the database:", closeErr.message);
+    }
   }
 }
 
