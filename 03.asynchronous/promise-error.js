@@ -1,5 +1,5 @@
-import { runAsync, getAsync, closeAsync } from "./promise-utils.js";
 import sqlite3 from "sqlite3";
+import { runAsync, getAsync, closeAsync } from "./promise-shared.js";
 
 const db = new sqlite3.Database(":memory:");
 
@@ -13,21 +13,44 @@ runAsync(
   })
   .then((result) => {
     console.log("Inserted record with ID:", result.lastID);
-    console.log("Attempting to insert duplicate record...");
     return runAsync(db, "INSERT INTO books (title) VALUES (?)", ["Book 1"]);
   })
-  .catch((err) => {
-    console.error("Error inserting duplicate record:", err.message);
-  })
-  .then(() => getAsync(db, "SELECT * FROM non_existent_table"))
-  .catch((err) => {
-    console.error("Error fetching from non-existent table:", err.message);
-  })
-  .then(() => runAsync(db, "DROP TABLE books"))
-  .then(() => {
-    console.log("Table deleted");
-    return closeAsync(db);
+  .catch((error) => {
+    if (error.code === "SQLITE_CONSTRAINT") {
+      console.error("Error inserting duplicate record:", error.message);
+    } else {
+      return Promise.reject(error);
+    }
   })
   .then(() => {
-    console.log("Database closed");
+    return getAsync(db, "SELECT * FROM non_existent_table");
+  })
+  .then((rows) => {
+    console.log("Fetched rows:", rows);
+  })
+  .catch((error) => {
+    console.error("Error fetching from non-existent table:", error.message);
+  })
+  .finally(() => {
+    return runAsync(db, "DROP TABLE books")
+      .then(() => {
+        console.log("Table deleted");
+      })
+      .catch((error) => {
+        console.error("Error deleting table:", error.message);
+      });
+  })
+  .finally(() => {
+    return closeAsync(db)
+      .then(() => {
+        console.log("Database closed");
+      })
+      .catch((error) => {
+        console.error("Error closing database:", error.message);
+      });
+  })
+  .catch((error) => {
+    if (error.code !== "SQLITE_CONSTRAINT") {
+      console.error("Final error:", error.message);
+    }
   });
