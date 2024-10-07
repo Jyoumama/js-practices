@@ -3,9 +3,6 @@
 import sqlite3 from  'sqlite3';
 import inquirer from 'inquirer';
 
-const db = sqlite3.verbose();
-
-// Memoクラス: メモのデータを管理
 class Memo {
   constructor(title, content) {
     this.title = title;
@@ -14,7 +11,6 @@ class Memo {
   }
 }
 
-// MemoRepositoryクラス: SQLite3を使用してメモの保存、読み込み、削除を管理
 class MemoRepository {
   constructor() {
     this.db = new sqlite3.Database('./memos.db', (err) => {
@@ -81,7 +77,6 @@ class MemoRepository {
   }
 }
 
-// MemoAppクラス: アプリケーション全体を管理
 class MemoApp {
   constructor() {
     this.memoRepo = new MemoRepository();
@@ -157,6 +152,5 @@ class MemoApp {
   }
 }
 
-// 実行開始
 const app = new MemoApp();
 app.run();
