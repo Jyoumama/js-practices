@@ -1,5 +1,5 @@
-import { runAsync, allAsync, closeAsync } from "./promise-utils.js";
 import sqlite3 from "sqlite3";
+import { runAsync, allAsync, closeAsync } from "./promise-shared.js";
 
 const db = new sqlite3.Database(":memory:");
 
@@ -26,3 +26,4 @@ await runAsync(db, "DROP TABLE books");
 console.log("Table deleted");
 
 await closeAsync(db);
+console.log("Database closed");
