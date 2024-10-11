@@ -1,14 +1,14 @@
 class MemoContent {
-  constructor(content, createdAt = new Date(),id = null) {
+  constructor(content, createdAt = new Date(), id = null) {
     this._id = id;
     this._content = content;
     this._createdAt = new Date(createdAt);
     if (isNaN(this._createdAt)) {
-      this._createdAt = new Date(); 
+      this._createdAt = new Date();
     }
   }
 
-  getId(){
+  getId() {
     return this._id;
   }
 
