@@ -31,27 +31,33 @@ class MemoApp {
 
     const input = await new Promise((resolve) => {
       let dataBuffer = "";
-      process.stdin.on("data", (data) => {
+      process.stdin.once("data", (data) => {
         dataBuffer += data;
       });
-      process.stdin.on("end", () => resolve(dataBuffer));
+      process.stdin.once("end", () => {
+        process.stdin.pause();
+        resolve(dataBuffer);
+      });
     });
 
-    const firstLine = input.split("\n")[0];
-    const memo = new MemoContent(firstLine, input.trim());
+    const memo = new MemoContent(input.trim());
     await this.memoRepo.addMemo(memo);
+    console.log("Memo added successfully");
   }
 
   async listMemos() {
     const memos = await this.memoRepo.getAllMemos();
-    memos.forEach((memo) => {
-      console.log(memo.getTitle());
-    });
+    if (memos.length === 0) {
+      console.log("No memos found.");
+    } else {
+      memos.forEach((memo) => {
+        console.log(memo.getTitle());
+      });
+    }
   }
 
   async readMemo() {
     const memos = await this.memoRepo.getAllMemos();
-
     if (memos.length === 0) {
       console.log("No memos found.");
       const { addNewMemo } = await inquirer.prompt([
@@ -71,31 +77,23 @@ class MemoApp {
       return;
     }
 
-    const choices = memos.map((memo) => ({ 
-      name: memo.getTitle, 
-      value: memo 
+    const choices = memos.map((memo) => ({
+      name: memo.getTitle,
+      value: memo,
     }));
 
-    try {
-      const { selectedMemo } = await inquirer.prompt([
-        {
-          type: "list",
-          name: "selectedMemo",
-          message: "Choose a memo you want to see:",
-          choices,
-        },
-      ]);
+    const { selectedMemo } = await inquirer.prompt([
+      {
+        type: "list",
+        name: "selectedMemo",
+        message: "Choose a memo you want to see:",
+        choices,
+      },
+    ]);
 
-      console.log(
-        `Title: ${selectedMemo.getTitle}\nContent: ${selectedMemo.getContent}`,
-      );
-    } catch (err) {
-      if (err.isTtyError) {
-        console.error("Prompt couldn't be rendered in the current environment");
-      } else {
-        console.log("Operation was canceled.");
-      }
-    }
+    console.log(
+      `Title: ${selectedMemo.getTitle()}\nContent: ${selectedMemo.getContent()}`,
+    );
   }
 
   async deleteMemo() {
@@ -120,9 +118,9 @@ class MemoApp {
       return;
     }
 
-    const choices = memos.map((memo) => ({ 
-      name: memo.getTitle, 
-      value: memo 
+    const choices = memos.map((memo) => ({
+      name: memo.getTitle(),
+      value: memo,
     }));
 
     const { selectedMemo } = await inquirer.prompt([
@@ -137,6 +135,7 @@ class MemoApp {
     await this.memoRepo.deleteMemo(selectedMemo);
     console.log("Memo deleted successfully");
   }
+
   catch(err) {
     if (err.isTtyError) {
       console.error("Prompt couldn't be rendered in the current environment");
