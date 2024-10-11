@@ -12,7 +12,6 @@ class MemoRepository {
 
   async initDB() {
     try {
-      await this.db.run("DROP TABLE IF EXISTS memos");
       await this.db.run(
         "CREATE TABLE IF NOT EXISTS memos (" +
           "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -31,10 +30,9 @@ class MemoRepository {
   async addMemo(memo) {
     try {
       await this.db.run(
-        "INSERT INTO memos (title, content, createdAt) VALUES (?, ?, ?)",
+        "INSERT INTO memos (title,content, createdAt) VALUES (?, ?, ?)",
         [memo.getTitle(), memo.getContent(), memo.getCreatedAt().toISOString()],
       );
-      console.log("Memo added successfully");
     } catch (err) {
       console.error("Error adding memo", err);
       throw err;
@@ -44,9 +42,11 @@ class MemoRepository {
   async getAllMemos() {
     try {
       const rows = await this.db.all(
-        "SELECT id, title, content, createdAt FROM memos ORDER BY id DESC",
+        "SELECT id, content, createdAt FROM memos ORDER BY id DESC",
       );
-      return rows.map((row) => new MemoContent(row.content, new Date(row.createdAt)));
+      return rows.map(
+        (row) => new MemoContent(row.content, new Date(row.createdAt), row.id),
+      );
     } catch (err) {
       console.error("Error getting memos", err);
       throw err;
@@ -56,7 +56,6 @@ class MemoRepository {
   async deleteMemo(memo) {
     try {
       await this.db.run("DELETE FROM memos WHERE id = ?", [memo.getId()]);
-      console.log("Memo deleted successfully");
     } catch (err) {
       console.error("Error deleting memo", err);
       throw err;
