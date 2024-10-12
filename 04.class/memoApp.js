@@ -29,7 +29,7 @@ class MemoApp {
   async addMemo() {
     process.on("SIGINT", () => {
       console.log("\nOperation was canceled by user.");
-      process.exit(0);
+      process.exit(1);
     });
 
     if (process.stdin.isTTY) {
