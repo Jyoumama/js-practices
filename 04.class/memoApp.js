@@ -4,12 +4,9 @@ import MemoContent from "./memoContent.js";
 
 class MemoApp {
   #memoRepo;
+
   constructor() {
     this.#memoRepo = new MemoRepository();
-    process.on("SIGINT", () => {
-      console.log("\nOperation was canceled by user.");
-      process.exit(0);
-    });
   }
 
   async run() {
@@ -30,6 +27,11 @@ class MemoApp {
   }
 
   async addMemo() {
+    process.on("SIGINT", () => {
+      console.log("\nOperation was canceled by user.");
+      process.exit(0);
+    });
+
     if (process.stdin.isTTY) {
       console.log("Enter your memo (end with Ctrl+D):");
     }
