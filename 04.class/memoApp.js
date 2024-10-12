@@ -69,13 +69,16 @@ class MemoApp {
   async listMemos() {
     try {
       const memos = await this.#memoRepo.getAllMemos();
+      
       if (memos.length === 0) {
         console.log("No memos found.");
-      } else {
-        memos.forEach((memo) => {
-          console.log(memo.getTitle());
-        });
+        return;
       }
+
+      memos.forEach((memo) => {
+        console.log(memo.getTitle());
+      });
+
     } catch (err) {
       console.error("Error fetching memos:", err);
     }
