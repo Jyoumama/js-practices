@@ -39,6 +39,11 @@ class MemoApp {
     }
 
     const input = await this.getInputFromUser();
+    if (!input) {
+      console.log("No input provided.");
+      return;
+    }
+
     const memo = new MemoContent(input.trim());
     try {
       await this.#memoRepo.addMemo(memo);
@@ -51,10 +56,10 @@ class MemoApp {
   async getInputFromUser() {
     return new Promise((resolve) => {
       let dataBuffer = "";
-      process.stdin.once("data", (data) => {
+      process.stdin.on("data", (data) => {
         dataBuffer += data;
       });
-      process.stdin.once("end", () => {
+      process.stdin.on("end", () => {
         process.stdin.pause();
         resolve(dataBuffer);
       });
@@ -127,7 +132,11 @@ class MemoApp {
         `Title: ${selectedMemo.getTitle()}\nContent: ${selectedMemo.getContent()}`,
       );
     } catch (err) {
-      console.error("Error prompting for memo selection:", err);
+      if (err.name === "ExitPromptError") {
+        console.log("Prompt was canceled by user.");
+      } else {
+        console.error("Error prompting for memo selection:", err);
+      }
     }
   }
 
@@ -181,7 +190,11 @@ class MemoApp {
       await this.#memoRepo.deleteMemo(selectedMemo);
       console.log("Memo deleted successfully");
     } catch (err) {
-      console.error("Error prompting for new memo:", err);
+      if (err.name === "ExitPromptError") {
+        console.log("Prompt was canceled by user.");
+      } else {
+        console.error("Error prompting for new memo:", err);
+      }
     }
   }
 }
