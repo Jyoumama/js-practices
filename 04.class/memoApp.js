@@ -23,6 +23,7 @@ class MemoApp {
       await this.deleteMemo();
     } else {
       console.log("Unknown command");
+      process.exit(1);
     }
   }
 
