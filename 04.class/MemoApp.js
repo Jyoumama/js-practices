@@ -5,6 +5,11 @@ import MemoContent from "./MemoContent.js";
 class MemoApp {
   constructor() {
     this.memoRepo = new MemoRepository();
+    //Ctrl+C（SIGINT）をキャッチしてプロンプトの中断を適切に処理
+    process.on("SIGINT", () => {
+      console.log("\nOperation was canceled by user.");
+      process.exit(0); // 正常終了コードで終了
+    });
   }
 
   async run() {
@@ -57,90 +62,102 @@ class MemoApp {
   }
 
   async readMemo() {
-    const memos = await this.memoRepo.getAllMemos();
-    if (memos.length === 0) {
-      console.log("No memos found.");
-      const { addNewMemo } = await inquirer.prompt([
+    try {
+      const memos = await this.memoRepo.getAllMemos();
+      if (memos.length === 0) {
+        console.log("No memos found.");
+        const { addNewMemo } = await inquirer.prompt([
+          {
+            type: "confirm",
+            name: "addNewMemo",
+            message: "No memos found. Would you like to add a new memo?",
+            default: true,
+          },
+        ]);
+
+        if (addNewMemo) {
+          await this.addMemo();
+        } else {
+          console.log("No memos were added.");
+        }
+        return;
+      }
+
+      const choices = memos.map((memo) => ({
+        name: memo.getTitle(),
+        value: memo,
+      }));
+
+      const { selectedMemo } = await inquirer.prompt([
         {
-          type: "confirm",
-          name: "addNewMemo",
-          message: "No memos found. Would you like to add a new memo?",
-          default: true,
+          type: "list",
+          name: "selectedMemo",
+          message: "Choose a memo you want to see:",
+          choices,
         },
       ]);
 
-      if (addNewMemo) {
-        await this.addMemo();
+      console.log(
+        `Title: ${selectedMemo.getTitle()}\nContent: ${selectedMemo.getContent()}`,
+      );
+    } catch (err) {
+      if (err.isTtyError) {
+        console.error("Prompt couldn't be rendered in the current environment");
+      } else if (err.message === "ExitPromptError") {
+        console.log("Prompt was canceled by user.");
       } else {
-        console.log("No memos were added.");
+        console.error("An error occurred:", err);
       }
-      return;
     }
-
-    const choices = memos.map((memo) => ({
-      name: memo.getTitle,
-      value: memo,
-    }));
-
-    const { selectedMemo } = await inquirer.prompt([
-      {
-        type: "list",
-        name: "selectedMemo",
-        message: "Choose a memo you want to see:",
-        choices,
-      },
-    ]);
-
-    console.log(
-      `Title: ${selectedMemo.getTitle()}\nContent: ${selectedMemo.getContent()}`,
-    );
   }
 
   async deleteMemo() {
-    const memos = await this.memoRepo.getAllMemos();
+    try {
+      const memos = await this.memoRepo.getAllMemos();
 
-    if (memos.length === 0) {
-      console.log("No memos found.");
-      const { addNewMemo } = await inquirer.prompt([
+      if (memos.length === 0) {
+        console.log("No memos found.");
+        const { addNewMemo } = await inquirer.prompt([
+          {
+            type: "confirm",
+            name: "addNewMemo",
+            message: "No memos found. Would you like to add a new memo?",
+            default: true,
+          },
+        ]);
+
+        if (addNewMemo) {
+          await this.addMemo();
+        } else {
+          console.log("No memos were added.");
+        }
+        return;
+      }
+
+      const choices = memos.map((memo) => ({
+        name: memo.getTitle(),
+        value: memo,
+      }));
+
+      const { selectedMemo } = await inquirer.prompt([
         {
-          type: "confirm",
-          name: "addNewMemo",
-          message: "No memos found. Would you like to add a new memo?",
-          default: true,
+          type: "list",
+          name: "selectedMemo",
+          message: "Choose a memo you want to delete:",
+          choices,
         },
       ]);
 
-      if (addNewMemo) {
-        await this.addMemo();
+      await this.memoRepo.deleteMemo(selectedMemo);
+      console.log("Memo deleted successfully");
+    } catch (err) {
+      if (err.isTtyError) {
+        console.error("Prompt couldn't be rendered in the current environment");
+      } else if (err.name === "ExitPromptError") {
+        console.log("Prompt was canceled by user.");
       } else {
-        console.log("No memos were added.");
+        console.error("An error occurred:", err);
       }
-      return;
-    }
-
-    const choices = memos.map((memo) => ({
-      name: memo.getTitle(),
-      value: memo,
-    }));
-
-    const { selectedMemo } = await inquirer.prompt([
-      {
-        type: "list",
-        name: "selectedMemo",
-        message: "Choose a memo you want to delete:",
-        choices,
-      },
-    ]);
-
-    await this.memoRepo.deleteMemo(selectedMemo);
-    console.log("Memo deleted successfully");
-  }
-
-  catch(err) {
-    if (err.isTtyError) {
-      console.error("Prompt couldn't be rendered in the current environment");
-    } else {
-      console.log("Operation was canceled.");
     }
   }
 }
