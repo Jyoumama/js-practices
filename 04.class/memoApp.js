@@ -11,7 +11,7 @@ class MemoApp {
 
   async run() {
     await this.#memoRepo.initDB();
-    
+
     const args = process.argv.slice(2);
 
     if (args.length === 0) {
@@ -38,7 +38,14 @@ class MemoApp {
       console.log("Enter your memo (end with Ctrl+D):");
     }
 
-    const input = await new Promise((resolve) => {
+    const input = await this.getInputFromUser();
+    const memo = new MemoContent(input.trim());
+    await this.#memoRepo.addMemo(memo);
+    console.log("memo added successfully");
+  }
+
+  async getInputFromUser() {
+    return new Promise((resolve) => {
       let dataBuffer = "";
       process.stdin.once("data", (data) => {
         dataBuffer += data;
@@ -48,10 +55,6 @@ class MemoApp {
         resolve(dataBuffer);
       });
     });
-
-    const memo = new MemoContent(input.trim());
-    await this.#memoRepo.addMemo(memo);
-    console.log("Memo added successfully");
   }
 
   async listMemos() {
