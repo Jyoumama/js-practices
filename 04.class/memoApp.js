@@ -3,8 +3,9 @@ import MemoRepository from "./memoRepository.js";
 import MemoContent from "./memoContent.js";
 
 class MemoApp {
+  #memoRepo;
   constructor() {
-    this.memoRepo = new MemoRepository();
+    this.#memoRepo = new MemoRepository();
     process.on("SIGINT", () => {
       console.log("\nOperation was canceled by user.");
       process.exit(0);
@@ -12,7 +13,7 @@ class MemoApp {
   }
 
   async run() {
-    await this.memoRepo.initDB();
+    await this.#memoRepo.initDB();
     const args = process.argv.slice(2);
 
     if (args.length === 0) {
@@ -45,12 +46,12 @@ class MemoApp {
     });
 
     const memo = new MemoContent(input.trim());
-    await this.memoRepo.addMemo(memo);
+    await this.#memoRepo.addMemo(memo);
     console.log("Memo added successfully");
   }
 
   async listMemos() {
-    const memos = await this.memoRepo.getAllMemos();
+    const memos = await this.#memoRepo.getAllMemos();
     if (memos.length === 0) {
       console.log("No memos found.");
     } else {
@@ -62,7 +63,7 @@ class MemoApp {
 
   async readMemo() {
     try {
-      const memos = await this.memoRepo.getAllMemos();
+      const memos = await this.#memoRepo.getAllMemos();
       if (memos.length === 0) {
         console.log("No memos found.");
         const { addNewMemo } = await inquirer.prompt([
@@ -112,7 +113,7 @@ class MemoApp {
 
   async deleteMemo() {
     try {
-      const memos = await this.memoRepo.getAllMemos();
+      const memos = await this.#memoRepo.getAllMemos();
 
       if (memos.length === 0) {
         console.log("No memos found.");
@@ -147,7 +148,7 @@ class MemoApp {
         },
       ]);
 
-      await this.memoRepo.deleteMemo(selectedMemo);
+      await this.#memoRepo.deleteMemo(selectedMemo);
       console.log("Memo deleted successfully");
     } catch (err) {
       if (err.isTtyError) {
