@@ -40,8 +40,12 @@ class MemoApp {
 
     const input = await this.getInputFromUser();
     const memo = new MemoContent(input.trim());
-    await this.#memoRepo.addMemo(memo);
-    console.log("memo added successfully");
+    try {
+      await this.#memoRepo.addMemo(memo);
+      console.log("memo added successfully");
+    } catch (err) {
+      console.error("Error adding memo:", err);
+    }
   }
 
   async getInputFromUser() {
@@ -58,21 +62,32 @@ class MemoApp {
   }
 
   async listMemos() {
-    const memos = await this.#memoRepo.getAllMemos();
-    if (memos.length === 0) {
-      console.log("No memos found.");
-    } else {
-      memos.forEach((memo) => {
-        console.log(memo.getTitle());
-      });
-    }
-  }
-
-  async readMemo() {
     try {
       const memos = await this.#memoRepo.getAllMemos();
       if (memos.length === 0) {
         console.log("No memos found.");
+      } else {
+        memos.forEach((memo) => {
+          console.log(memo.getTitle());
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching memos:", err);
+    }
+  }
+
+  async readMemo() {
+    let memos = [];
+    try {
+      memos = await this.#memoRepo.getAllMemos();
+    } catch (err) {
+      console.error("Error fetching memos:", err);
+      return;
+    }
+
+    if (memos.length === 0) {
+      console.log("No memos found.");
+      try {
         const { addNewMemo } = await inquirer.prompt([
           {
             type: "confirm",
@@ -87,9 +102,13 @@ class MemoApp {
         } else {
           console.log("No memos were added.");
         }
-        return;
+      } catch (err) {
+        console.error("Error prompting for new memo:", err);
       }
+      return;
+    }
 
+    try {
       const choices = memos.map((memo) => ({
         name: memo.getTitle(),
         value: memo,
@@ -108,22 +127,22 @@ class MemoApp {
         `Title: ${selectedMemo.getTitle()}\nContent: ${selectedMemo.getContent()}`,
       );
     } catch (err) {
-      if (err.isTtyError) {
-        console.error("Prompt couldn't be rendered in the current environment");
-      } else if (err.message === "ExitPromptError") {
-        console.log("Prompt was canceled by user.");
-      } else {
-        console.error("An error occurred:", err);
-      }
+      console.error("Error prompting for memo selection:", err);
     }
   }
 
   async deleteMemo() {
+    let memos = [];
     try {
-      const memos = await this.#memoRepo.getAllMemos();
+      memos = await this.#memoRepo.getAllMemos();
+    } catch (err) {
+      console.error("Error fetching memos:", err);
+      return;
+    }
 
-      if (memos.length === 0) {
-        console.log("No memos found.");
+    if (memos.length === 0) {
+      console.log("No memos found.");
+      try {
         const { addNewMemo } = await inquirer.prompt([
           {
             type: "confirm",
@@ -138,9 +157,13 @@ class MemoApp {
         } else {
           console.log("No memos were added.");
         }
-        return;
+      } catch (err) {
+        console.error("Error prompting for new memo:", err);
       }
+      return;
+    }
 
+    try {
       const choices = memos.map((memo) => ({
         name: memo.getTitle(),
         value: memo,
@@ -158,13 +181,7 @@ class MemoApp {
       await this.#memoRepo.deleteMemo(selectedMemo);
       console.log("Memo deleted successfully");
     } catch (err) {
-      if (err.isTtyError) {
-        console.error("Prompt couldn't be rendered in the current environment");
-      } else if (err.name === "ExitPromptError") {
-        console.log("Prompt was canceled by user.");
-      } else {
-        console.error("An error occurred:", err);
-      }
+      console.error("Error prompting for new memo:", err);
     }
   }
 }
