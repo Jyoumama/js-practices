@@ -11,6 +11,7 @@ class MemoApp {
 
   async run() {
     await this.#memoRepo.initDB();
+    
     const args = process.argv.slice(2);
 
     if (args.length === 0) {
