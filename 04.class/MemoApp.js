@@ -5,10 +5,9 @@ import MemoContent from "./MemoContent.js";
 class MemoApp {
   constructor() {
     this.memoRepo = new MemoRepository();
-    //Ctrl+C（SIGINT）をキャッチしてプロンプトの中断を適切に処理
     process.on("SIGINT", () => {
       console.log("\nOperation was canceled by user.");
-      process.exit(0); // 正常終了コードで終了
+      process.exit(0);
     });
   }
 
