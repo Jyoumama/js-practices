@@ -107,7 +107,7 @@ class MemoApp {
       }
 
       memos.forEach((memo) => {
-        console.log(memo.getTitle());
+        console.log(memo.title);
       });
     } catch (err) {
       if (typeof err === "object" && err !== null) {
@@ -140,7 +140,7 @@ class MemoApp {
 
     try {
       const choices = memos.map((memo) => ({
-        name: memo.getTitle(),
+        name: memo.title,
         value: memo,
       }));
 
@@ -153,7 +153,7 @@ class MemoApp {
         },
       ]);
 
-      console.log(`Content:\n${selectedMemo.getContent()}`);
+      console.log(`Content:\n${selectedMemo.content}`);
     } catch (err) {
       if (
         typeof err === "object" &&
@@ -189,7 +189,7 @@ class MemoApp {
 
     try {
       const choices = memos.map((memo) => ({
-        name: memo.getTitle(),
+        name: memo.title,
         value: memo,
       }));
 

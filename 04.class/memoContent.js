@@ -12,19 +12,19 @@ class MemoContent {
     }
   }
 
-  getId() {
+  get id() {
     return this.#id;
   }
 
-  getTitle() {
+  get title() {
     return this.#content.split("\n")[0];
   }
 
-  getContent() {
+  get content() {
     return this.#content;
   }
 
-  getCreatedAt() {
+  get createdAt() {
     return this.#createdAt;
   }
 }

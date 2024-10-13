@@ -31,7 +31,7 @@ class MemoRepository {
     try {
       await this.db.run(
         "INSERT INTO memos (title,content, createdAt) VALUES (?, ?, ?)",
-        [memo.getTitle(), memo.getContent(), memo.getCreatedAt().toISOString()],
+        [memo.title, memo.content, memo.createdAt.toISOString()],
       );
     } catch (err) {
       console.error("Error adding memo", err);
@@ -55,7 +55,7 @@ class MemoRepository {
 
   async deleteMemo(memo) {
     try {
-      await this.db.run("DELETE FROM memos WHERE id = ?", [memo.getId()]);
+      await this.db.run("DELETE FROM memos WHERE id = ?", [memo.id]);
     } catch (err) {
       console.error("Error deleting memo", err);
       throw err;
