@@ -10,21 +10,30 @@ class MemoApp {
   }
 
   async run() {
-    await this.#memoRepo.initDB();
+    try {
+      await this.#memoRepo.initDB();
 
-    const args = process.argv.slice(2);
+      const args = process.argv.slice(2);
 
-    if (args.length === 0) {
-      await this.addMemo();
-    } else if (args.includes("-l")) {
-      await this.listMemos();
-    } else if (args.includes("-r")) {
-      await this.readMemo();
-    } else if (args.includes("-d")) {
-      await this.deleteMemo();
-    } else {
-      console.log("Unknown command");
-      process.exit(1);
+      if (args.length === 0) {
+        await this.addMemo();
+      } else if (args.includes("-l")) {
+        await this.listMemos();
+      } else if (args.includes("-r")) {
+        await this.readMemo();
+      } else if (args.includes("-d")) {
+        await this.deleteMemo();
+      } else {
+        console.log("Unknown command");
+        process.exit(1);
+      }
+    } catch (err) {
+      if (typeof err === "object" && err !== null) {
+        console.error("Error running the application:", err);
+      } else {
+        console.error("An unknown error occurred:", err);
+      }
+      throw err;
     }
   }
 
@@ -38,18 +47,23 @@ class MemoApp {
       console.log("Enter your memo (end with Ctrl+D):");
     }
 
-    const input = await this.getInputFromUser();
-    if (!input) {
-      console.log("No input provided.");
-      return;
-    }
-
-    const memo = new MemoContent(input.trim());
     try {
+      const input = await this.getInputFromUser();
+      if (!input) {
+        console.log("No input provided.");
+        return;
+      }
+
+      const memo = new MemoContent(input.trim());
       await this.#memoRepo.addMemo(memo);
       console.log("memo added successfully");
     } catch (err) {
-      console.error("Error adding memo:", err);
+      if (typeof err === "object" && err !== null) {
+        console.error("Error adding memo:", err);
+      } else {
+        console.error("An unknown error occurred:", err);
+      }
+      throw err;
     }
   }
 
@@ -96,7 +110,12 @@ class MemoApp {
         console.log(memo.getTitle());
       });
     } catch (err) {
-      console.error("Error fetching memos:", err);
+      if (typeof err === "object" && err !== null) {
+        console.error("Error fetching memos:", err);
+      } else {
+        console.error("An unknown error occurred:", err);
+      }
+      throw err;
     }
   }
 
@@ -105,8 +124,12 @@ class MemoApp {
     try {
       memos = await this.#memoRepo.getAllMemos();
     } catch (err) {
-      console.error("Error fetching memos:", err);
-      return;
+      if (typeof err === "object" && err !== null) {
+        console.error("Error fetching memos:", err);
+      } else {
+        console.error("An unknown error occurred:", err);
+      }
+      throw err;
     }
 
     if (memos.length === 0) {
@@ -132,11 +155,16 @@ class MemoApp {
 
       console.log(`Content:\n${selectedMemo.getContent()}`);
     } catch (err) {
-      if (err.name === "ExitPromptError") {
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        err.name === "ExitPromptError"
+      ) {
         console.log("Prompt was canceled by user.");
       } else {
         console.error("Error prompting for memo selection:", err);
       }
+      throw err;
     }
   }
 
@@ -145,8 +173,12 @@ class MemoApp {
     try {
       memos = await this.#memoRepo.getAllMemos();
     } catch (err) {
-      console.error("Error fetching memos:", err);
-      return;
+      if (typeof err === "object" && err !== null) {
+        console.error("Error fetching memos:", err);
+      } else {
+        console.error("An unknown error occurred:", err);
+      }
+      throw err;
     }
 
     if (memos.length === 0) {
@@ -173,10 +205,15 @@ class MemoApp {
       await this.#memoRepo.deleteMemo(selectedMemo);
       console.log("Memo deleted successfully");
     } catch (err) {
-      if (err.name === "ExitPromptError") {
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        err.name === "ExitPromptError"
+      ) {
         console.log("Prompt was canceled by user.");
       } else {
         console.error("Error prompting for memo deletion:", err);
+        throw err;
       }
     }
   }
