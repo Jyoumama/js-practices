@@ -1,27 +1,31 @@
 class MemoContent {
-  constructor(content, createdAt = new Date(), id = null) {
-    this._id = id;
-    this._content = content;
-    this._createdAt = new Date(createdAt);
-    if (isNaN(this._createdAt)) {
-      this._createdAt = new Date();
+  #id;
+  #content;
+  #createdAt;
+
+  constructor( id = null, content, createdAt = new Date()) {
+    this.#id = id;
+    this.#content = content;
+    this.#createdAt = new Date(createdAt);
+    if (isNaN(this.#createdAt)) {
+      this.#createdAt = new Date();
     }
   }
 
   getId() {
-    return this._id;
+    return this.#id;
   }
 
   getTitle() {
-    return this._content.split("\n")[0];
+    return this.#content.split("\n")[0];
   }
 
   getContent() {
-    return this._content;
+    return this.#content;
   }
 
   getCreatedAt() {
-    return this._createdAt;
+    return this.#createdAt;
   }
 }
 
