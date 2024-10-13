@@ -130,9 +130,7 @@ class MemoApp {
         },
       ]);
 
-      console.log(
-        `Title: ${selectedMemo.getTitle()}\nContent: ${selectedMemo.getContent()}`,
-      );
+      console.log(`Content:\n${selectedMemo.getContent()}`);
     } catch (err) {
       if (err.name === "ExitPromptError") {
         console.log("Prompt was canceled by user.");
