@@ -66,10 +66,27 @@ class MemoApp {
     });
   }
 
+  async promptToAddNewMemo() {
+    const { shouldAddNewMemo } = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "shouldAddNewMemo",
+        message: "No memos found. Would you like to add a new memo?",
+        default: true,
+      },
+    ]);
+
+    if (shouldAddNewMemo) {
+      await this.addMemo();
+    } else {
+      console.log("No memos were added.");
+    }
+  }
+
   async listMemos() {
     try {
       const memos = await this.#memoRepo.getAllMemos();
-      
+
       if (memos.length === 0) {
         console.log("No memos found.");
         return;
@@ -95,24 +112,7 @@ class MemoApp {
 
     if (memos.length === 0) {
       console.log("No memos found.");
-      try {
-        const { addNewMemo } = await inquirer.prompt([
-          {
-            type: "confirm",
-            name: "addNewMemo",
-            message: "No memos found. Would you like to add a new memo?",
-            default: true,
-          },
-        ]);
-
-        if (addNewMemo) {
-          await this.addMemo();
-        } else {
-          console.log("No memos were added.");
-        }
-      } catch (err) {
-        console.error("Error prompting for new memo:", err);
-      }
+      await this.promptToAddNewMemo(); // 修正箇所：logメソッドを削除し、適切な処理に変更
       return;
     }
 
@@ -132,7 +132,7 @@ class MemoApp {
       ]);
 
       console.log(
-        `Title: ${selectedMemo.getTitle()}\nContent: ${selectedMemo.getContent()}`,
+        `Title: ${selectedMemo.getTitle()}\nContent: ${selectedMemo.getContent()}`
       );
     } catch (err) {
       if (err.name === "ExitPromptError") {
@@ -154,24 +154,7 @@ class MemoApp {
 
     if (memos.length === 0) {
       console.log("No memos found.");
-      try {
-        const { addNewMemo } = await inquirer.prompt([
-          {
-            type: "confirm",
-            name: "addNewMemo",
-            message: "No memos found. Would you like to add a new memo?",
-            default: true,
-          },
-        ]);
-
-        if (addNewMemo) {
-          await this.addMemo();
-        } else {
-          console.log("No memos were added.");
-        }
-      } catch (err) {
-        console.error("Error prompting for new memo:", err);
-      }
+      await this.promptToAddNewMemo();  // 修正：構文エラーの原因を解消
       return;
     }
 
@@ -196,7 +179,7 @@ class MemoApp {
       if (err.name === "ExitPromptError") {
         console.log("Prompt was canceled by user.");
       } else {
-        console.error("Error prompting for new memo:", err);
+        console.error("Error prompting for memo deletion:", err);
       }
     }
   }
