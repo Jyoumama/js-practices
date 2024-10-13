@@ -72,7 +72,7 @@ class MemoApp {
         type: "confirm",
         name: "shouldAddNewMemo",
         message: "No memos found. Would you like to add a new memo?",
-        default: true,
+        default: false,
       },
     ]);
 
@@ -95,7 +95,6 @@ class MemoApp {
       memos.forEach((memo) => {
         console.log(memo.getTitle());
       });
-
     } catch (err) {
       console.error("Error fetching memos:", err);
     }
@@ -132,7 +131,7 @@ class MemoApp {
       ]);
 
       console.log(
-        `Title: ${selectedMemo.getTitle()}\nContent: ${selectedMemo.getContent()}`
+        `Title: ${selectedMemo.getTitle()}\nContent: ${selectedMemo.getContent()}`,
       );
     } catch (err) {
       if (err.name === "ExitPromptError") {
@@ -154,7 +153,7 @@ class MemoApp {
 
     if (memos.length === 0) {
       console.log("No memos found.");
-      await this.promptToAddNewMemo(); 
+      await this.promptToAddNewMemo();
       return;
     }
 
