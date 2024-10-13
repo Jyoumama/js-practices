@@ -112,7 +112,7 @@ class MemoApp {
 
     if (memos.length === 0) {
       console.log("No memos found.");
-      await this.promptToAddNewMemo(); // 修正箇所：logメソッドを削除し、適切な処理に変更
+      await this.promptToAddNewMemo();
       return;
     }
 
@@ -154,7 +154,7 @@ class MemoApp {
 
     if (memos.length === 0) {
       console.log("No memos found.");
-      await this.promptToAddNewMemo();  // 修正：構文エラーの原因を解消
+      await this.promptToAddNewMemo(); 
       return;
     }
 
