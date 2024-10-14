@@ -2,7 +2,7 @@ import sqlite3 from "sqlite3";
 import { promisify } from "util";
 import MemoContent from "./memoContent.js";
 
-class MemoRepository {
+export default class MemoRepository {
   constructor() {
     this.db = new sqlite3.Database("./memos.db");
     this.promisedDB = {
@@ -64,5 +64,3 @@ class MemoRepository {
     }
   }
 }
-
-export default MemoRepository;

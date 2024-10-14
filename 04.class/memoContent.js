@@ -1,9 +1,9 @@
-class MemoContent {
+export default class MemoContent {
   #id;
   #content;
   #createdAt;
 
-  constructor( id = null, content, createdAt = new Date()) {
+  constructor(id = null, content, createdAt = new Date()) {
     this.#id = id;
     this.#content = content;
     this.#createdAt = new Date(createdAt);
@@ -28,5 +28,3 @@ class MemoContent {
     return this.#createdAt;
   }
 }
-
-export default MemoContent;
