@@ -11,7 +11,7 @@ export default class MemoApp {
 
   async run() {
     try {
-      await this.#memoRepo.initDB();
+      await this.#memoRepo.createTable();
 
       const args = process.argv.slice(2);
 
