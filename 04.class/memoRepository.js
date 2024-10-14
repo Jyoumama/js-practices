@@ -12,7 +12,7 @@ export default class MemoRepository {
     };
   }
 
-  async initDB() {
+  async createTable() {
     try {
       await this.promisedDB.run(`
         CREATE TABLE IF NOT EXISTS memos (
@@ -21,10 +21,8 @@ export default class MemoRepository {
           created_at INTEGER NOT NULL
         )
       `);
-      console.log("Table created or already exists.");
     } catch (err) {
-      console.error("Error initializing database", err);
-      throw err;
+      throw new Error("Error initializing database:" + err.message);
     }
   }
 
@@ -35,8 +33,7 @@ export default class MemoRepository {
         [memo.content, memo.createdAt.getTime()],
       );
     } catch (err) {
-      console.error("Error adding memo", err);
-      throw err;
+      throw new Error("Error adding memo:" + err.message);
     }
   }
 
@@ -49,8 +46,7 @@ export default class MemoRepository {
         (row) => new MemoContent(row.content, new Date(row.created_at), row.id),
       );
     } catch (err) {
-      console.error("Error getting memos", err);
-      throw err;
+      throw new Error("Error getting memos:" + err.message);
     }
   }
 
@@ -58,8 +54,7 @@ export default class MemoRepository {
     try {
       await this.promisedDB.run("DELETE FROM memos WHERE id = ?", [memo.id]);
     } catch (err) {
-      console.error("Error deleting memo", err);
-      throw err;
+      throw new Error("Error deleting memo:" + err.message);
     }
   }
 }
