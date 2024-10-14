@@ -2,7 +2,7 @@ import inquirer from "inquirer";
 import MemoRepository from "./memoRepository.js";
 import MemoContent from "./memoContent.js";
 
-class MemoApp {
+export default class MemoApp {
   #memoRepo;
 
   constructor() {
@@ -218,5 +218,3 @@ class MemoApp {
     }
   }
 }
-
-export default MemoApp;
