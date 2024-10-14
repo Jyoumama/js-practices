@@ -5,14 +5,16 @@ import MemoContent from "./memoContent.js";
 class MemoRepository {
   constructor() {
     this.db = new sqlite3.Database("./memos.db");
-    this.db.run = promisify(this.db.run).bind(this.db);
-    this.db.get = promisify(this.db.get).bind(this.db);
-    this.db.all = promisify(this.db.all).bind(this.db);
+    this.promisedDB = {
+      run: promisify(this.db.run).bind(this.db),
+      get: promisify(this.db.get).bind(this.db),
+      all: promisify(this.db.all).bind(this.db),
+    };
   }
 
   async initDB() {
     try {
-      await this.db.run(
+      await this.promisedDB.run(
         "CREATE TABLE IF NOT EXISTS memos (" +
           "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
           "title TEXT NOT NULL, " +
@@ -29,7 +31,7 @@ class MemoRepository {
 
   async addMemo(memo) {
     try {
-      await this.db.run(
+      await this.promisedDB.run(
         "INSERT INTO memos (title,content, createdAt) VALUES (?, ?, ?)",
         [memo.title, memo.content, memo.createdAt.toISOString()],
       );
@@ -41,7 +43,7 @@ class MemoRepository {
 
   async getAllMemos() {
     try {
-      const rows = await this.db.all(
+      const rows = await this.promisedDB.all(
         "SELECT id, content, createdAt FROM memos ORDER BY id DESC",
       );
       return rows.map(
@@ -55,7 +57,7 @@ class MemoRepository {
 
   async deleteMemo(memo) {
     try {
-      await this.db.run("DELETE FROM memos WHERE id = ?", [memo.id]);
+      await this.promisedDB.run("DELETE FROM memos WHERE id = ?", [memo.id]);
     } catch (err) {
       console.error("Error deleting memo", err);
       throw err;
