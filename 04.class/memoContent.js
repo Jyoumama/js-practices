@@ -3,9 +3,10 @@ export default class MemoContent {
   #content;
   #createdAt;
 
-  constructor(id = null, content, createdAt = new Date()) {
+  constructor(id = null, content = "", createdAt = new Date()) {
     this.#id = id;
-    this.#content = content;
+    this.#content = content && content.trim() !== "" ? content : null;
+    //this.#content = content.trim() === "" ? null : content;
     this.#createdAt = new Date(createdAt);
     if (isNaN(this.#createdAt)) {
       this.#createdAt = new Date();
@@ -17,7 +18,7 @@ export default class MemoContent {
   }
 
   get title() {
-    return this.#content.split("\n")[0];
+    return this.#content ? this.#content.split("\n")[0] : "Untitled";
   }
 
   get content() {
