@@ -49,12 +49,13 @@ export default class MemoApp {
 
     try {
       const input = await this.getInputFromUser();
-      if (!input) {
+
+      if (!input || input.trim() === "") {
         console.log("No input provided.");
         return;
       }
 
-      const memo = new MemoContent(input.trim());
+      const memo = new MemoContent(null, input.trim());
       await this.#memoRepo.addMemo(memo);
       console.log("memo added successfully");
     } catch (err) {
