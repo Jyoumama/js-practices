@@ -15,18 +15,23 @@ export default class MemoRepository {
   async createTable() {
     try {
       await this.promisedDB.run(`
-        CREATE TABLE IF NOT EXISTS memos (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          content TEXT NOT NULL,
-          created_at INTEGER NOT NULL
-        )
-      `);
+          CREATE TABLE IF NOT EXISTS memos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            content TEXT NOT NULL,
+            created_at INTEGER NOT NULL
+          )
+        `);
     } catch (err) {
       throw new Error("Error initializing database:" + err.message);
     }
   }
 
   async addMemo(memo) {
+    // メモの内容が null または空でないことを確認
+    if (!memo.content || memo.content.trim() === "") {
+      throw new Error("Memo content cannot be null or empty.");
+    }
+
     try {
       await this.promisedDB.run(
         "INSERT INTO memos (content, created_at) VALUES (?, ?)",
@@ -43,7 +48,8 @@ export default class MemoRepository {
         "SELECT id, content, created_at FROM memos ORDER BY id DESC",
       );
       return rows.map(
-        (row) => new MemoContent(row.content, new Date(row.created_at), row.id),
+        (row) =>
+          new MemoContent(row.id, row.content || "", new Date(row.created_at)),
       );
     } catch (err) {
       throw new Error("Error getting memos:" + err.message);
