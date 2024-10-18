@@ -17,7 +17,7 @@ console.log("Inserted record with ID:", result1.lastID);
 try {
   await runAsync(db, "INSERT INTO books (title) VALUES (?)", ["Book 1"]);
 } catch (error) {
-  if (error && "message" in error) {
+  if (error && "code" in error) {
     if (error.code === "SQLITE_CONSTRAINT") {
       console.error("Error inserting duplicate record:", error.message);
     } else {
