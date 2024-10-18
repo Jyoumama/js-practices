@@ -1,5 +1,5 @@
 import sqlite3 from "sqlite3";
-import { runAsync, getAsync, closeAsync } from "./promise-shared.js";
+import { runAsync, getAsync, closeAsync } from "./sqlite-async.js";
 
 const db = new sqlite3.Database(":memory:");
 
@@ -27,16 +27,16 @@ runAsync(
     console.log("Fetched rows:", rows);
   })
   .catch((error) => {
-    if(error.message.includes("no such table")){
-    console.error("Error fetching from non-existent table:", error.message);
-    return Promise.resolve();
-  }
-    return Promise.reject(error); 
+    if (error.message.includes("no such table")) {
+      console.error("Error fetching from non-existent table:", error.message);
+      return Promise.resolve();
+    }
+    return Promise.reject(error);
   })
   .then(() => runAsync(db, "DROP TABLE books"))
   .then(() => {
     console.log("Table deleted");
-    return closeAsync(db)
+    return closeAsync(db);
   })
   .then(() => {
     console.log("Database closed");
@@ -44,4 +44,3 @@ runAsync(
   .catch((error) => {
     console.error("Final error:", error.message);
   });
-  

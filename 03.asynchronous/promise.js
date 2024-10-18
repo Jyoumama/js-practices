@@ -1,5 +1,5 @@
 import sqlite3 from "sqlite3";
-import { runAsync, allAsync, closeAsync } from "./promise-shared.js";
+import { runAsync, allAsync, closeAsync } from "./sqlite-async.js";
 
 const db = new sqlite3.Database(":memory:");
 
@@ -29,4 +29,7 @@ runAsync(
   })
   .then(() => {
     console.log("Database closed");
+  })
+  .catch((error) => {
+    console.error("An error occurred:", error);
   });
