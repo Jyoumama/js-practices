@@ -27,7 +27,6 @@ export default class MemoRepository {
   }
 
   async addMemo(memo) {
-    // メモの内容が null または空でないことを確認
     if (!memo.content || memo.content.trim() === "") {
       throw new Error("Memo content cannot be null or empty.");
     }
