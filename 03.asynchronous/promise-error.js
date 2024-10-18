@@ -18,39 +18,30 @@ runAsync(
   .catch((error) => {
     if (error.code === "SQLITE_CONSTRAINT") {
       console.error("Error inserting duplicate record:", error.message);
-    } else {
-      return Promise.reject(error);
+      return Promise.resolve();
     }
+    return Promise.resolve();
   })
-  .then(() => {
-    return getAsync(db, "SELECT * FROM non_existent_table");
-  })
+  .then(() => getAsync(db, "SELECT * FROM non_existent_table"))
   .then((rows) => {
     console.log("Fetched rows:", rows);
   })
   .catch((error) => {
+    if(error.message.includes("no such table")){
     console.error("Error fetching from non-existent table:", error.message);
+    return Promise.resolve();
+  }
+    return Promise.reject(error); 
   })
-  .finally(() => {
-    return runAsync(db, "DROP TABLE books")
-      .then(() => {
-        console.log("Table deleted");
-      })
-      .catch((error) => {
-        console.error("Error deleting table:", error.message);
-      });
-  })
-  .finally(() => {
+  .then(() => runAsync(db, "DROP TABLE books"))
+  .then(() => {
+    console.log("Table deleted");
     return closeAsync(db)
-      .then(() => {
-        console.log("Database closed");
-      })
-      .catch((error) => {
-        console.error("Error closing database:", error.message);
-      });
+  })
+  .then(() => {
+    console.log("Database closed");
   })
   .catch((error) => {
-    if (error.code !== "SQLITE_CONSTRAINT") {
-      console.error("Final error:", error.message);
-    }
+    console.error("Final error:", error.message);
   });
+  
