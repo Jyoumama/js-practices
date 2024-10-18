@@ -17,7 +17,7 @@ console.log("Inserted record with ID:", result1.lastID);
 try {
   await runAsync(db, "INSERT INTO books (title) VALUES (?)", ["Book 1"]);
 } catch (error) {
-  if (error && typeof error === "object" && "message" in error) {
+  if (error && "message" in error) {
     if (error.code === "SQLITE_CONSTRAINT") {
       console.error("Error inserting duplicate record:", error.message);
     } else {
@@ -31,7 +31,7 @@ try {
 try {
   await getAsync(db, "SELECT * FROM non_existent_table");
 } catch (error) {
-  if (error && typeof error === "object" && "message" in error) {
+  if (error && "message" in error) {
     if (error.message.includes("no such table")) {
       console.error("Error fetching from non-existent table:", error.message);
     } else {
