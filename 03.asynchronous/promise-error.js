@@ -41,6 +41,4 @@ runAsync(
   .then(() => {
     console.log("Database closed");
   })
-  .catch((error) => {
-    console.error("Final error:", error.message);
-  });
+  
