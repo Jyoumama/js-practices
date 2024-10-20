@@ -1,9 +1,10 @@
 import sqlite3 from "sqlite3";
 import { runAsync, getAsync, closeAsync } from "./sqlite-async.js";
 
-const db = new sqlite3.Database(":memory:");
-
 async function myDatabaseOperations() {
+  const db = new sqlite3.Database(":memory:");
+
+  try {
   await runAsync(
     db,
     "CREATE TABLE books (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL UNIQUE)",
@@ -15,29 +16,63 @@ async function myDatabaseOperations() {
   ]);
   console.log("Inserted record with ID:", result1.lastID);
 
+    // 重複レコードの挿入エラーハンドリング
   try {
     await runAsync(db, "INSERT INTO books (title) VALUES (?)", ["Book 1"]);
   } catch (error) {
-    if (error && "code" in error) {
-      if (error.code === "SQLITE_CONSTRAINT") {
-        console.error("Error inserting duplicate record:", error.message);
+    // デバッグコード：errorの型を出力
+    console.log("Error type:", typeof error);
+    console.log("Error value:", error);
+    
+    // プロパティアクセスできない値をテスト
+    const testErrors = [null, undefined, "Some error", 42, true];
+    for (const testError of testErrors) {
+      try {
+        console.log("Test error code:", testError.code);
+      } catch (e) {
+        console.error(`Failed to access code for ${testError}:`, e.message);
+      }
+
+      try {
+        console.log("Test error message:", testError.message);
+      } catch (e) {
+        console.error(`Failed to access message for ${testError}:`, e.message);
+      }
+    }
+
+    if (error && "code" in error && error.code === "SQLITE_CONSTRAINT") {
+      console.error("Error inserting duplicate record:", error.message);
       } else {
         throw error;
       }
-    } else {
-      throw error;
     }
-  }
 
+   // 存在しないテーブルからのデータ取得エラーハンドリング
   try {
     await getAsync(db, "SELECT * FROM non_existent_table");
   } catch (error) {
-    if (error && "message" in error) {
-      if (error.message.includes("no such table")) {
-        console.error("Error fetching from non-existent table:", error.message);
-      } else {
-        throw error;
+    // デバッグコード：errorの型を出力
+    console.log("Error type:", typeof error);
+    console.log("Error value:", error);
+
+    // プロパティアクセスできない値をテスト
+    const testErrors = [null, undefined, "Some error", 42, true];
+    for (const testError of testErrors) {
+      try {
+        console.log("Test error code:", testError.code);
+      } catch (e) {
+        console.error(`Failed to access code for ${testError}:`, e.message);
       }
+
+      try {
+        console.log("Test error message:", testError.message);
+      } catch (e) {
+        console.error(`Failed to access message for ${testError}:`, e.message);
+      }
+    }
+
+    if (error && "message" in error && error.message.includes("no such table")) {
+      console.error("Error fetching from non-existent table:", error.message);
     } else {
       throw error;
     }
@@ -45,15 +80,10 @@ async function myDatabaseOperations() {
 
   await runAsync(db, "DROP TABLE books");
   console.log("Table deleted");
-
-  await closeAsync(db);
-  console.log("Database closed");
+  } finally {
+    await closeAsync(db);
+    console.log("Database closed");
+  }
 }
 
-(async () => {
-  try {
-    await myDatabaseOperations();
-  } catch (error) {
-    console.error("An unexpected error occured:", error.message);
-  }
-})();
+await myDatabaseOperations();
