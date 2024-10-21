@@ -25,7 +25,7 @@ runAsync(
       console.error("Error inserting duplicate record:", error.message);
     } else {
       throw error;
-    }  
+    }
   })
   .then(() => getAsync(db, "SELECT * FROM non_existent_table"))
   .catch((error) => {
