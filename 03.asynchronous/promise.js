@@ -29,5 +29,4 @@ runAsync(
   })
   .then(() => {
     console.log("Database closed");
-  })
-  
+  });
