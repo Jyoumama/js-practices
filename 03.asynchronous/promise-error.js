@@ -16,22 +16,28 @@ runAsync(
     return runAsync(db, "INSERT INTO books (title) VALUES (?)", ["Book 1"]);
   })
   .catch((error) => {
-    if (error.code === "SQLITE_CONSTRAINT") {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      error.code === "SQLITE_CONSTRAINT"
+    ) {
       console.error("Error inserting duplicate record:", error.message);
-      return Promise.resolve();
-    }
-    return Promise.resolve();
+    } else {
+      throw error;
+    }  
   })
   .then(() => getAsync(db, "SELECT * FROM non_existent_table"))
-  .then((rows) => {
-    console.log("Fetched rows:", rows);
-  })
   .catch((error) => {
-    if (error.message.includes("no such table")) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      error.message.includes("no such table")
+    ) {
       console.error("Error fetching from non-existent table:", error.message);
-      return Promise.resolve();
+    } else {
+      throw error;
     }
-    return Promise.reject(error);
   })
   .then(() => runAsync(db, "DROP TABLE books"))
   .then(() => {
