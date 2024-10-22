@@ -12,15 +12,25 @@ db.run(
 
       db.run("INSERT INTO books (title) VALUES (?)", ["Book 1"], (error) => {
         if (error) {
-          console.error("Error inserting duplicate record:", error.message);
+          if (error.code === "SQLITE_CONSTRAINT") {
+            console.error("Error inserting duplicate record:", error.message);
+          } else {
+            console.error("Unexpected error:", error.message);
+            return;
+          }
         }
 
         db.all("SELECT * FROM non_existent_table", (error) => {
           if (error) {
-            console.error(
-              "Error fetching from non-existent table:",
-              error.message,
-            );
+            if (error.message.includes("no such table")) {
+              console.error(
+                "Error fetching from non-existent table:",
+                error.message,
+              );
+            } else {
+              console.error("Unexpected error:", error.message);
+              return;
+            }
           }
 
           db.run("DROP TABLE books", () => {
