@@ -11,26 +11,22 @@ db.run(
       console.log("Inserted record with ID:", this.lastID);
 
       db.run("INSERT INTO books (title) VALUES (?)", ["Book 1"], (error) => {
-        if (error) {
-          if (error.code === "SQLITE_CONSTRAINT") {
-            console.error("Error inserting duplicate record:", error.message);
-          } else {
-            console.error("Unexpected error:", error.message);
-            return;
-          }
+        if (!(error instanceof Error)) return;
+        if (error.code === "SQLITE_CONSTRAINT") {
+          console.error("Error inserting duplicate record:", error.message);
+        } else {
+          return;
         }
 
         db.all("SELECT * FROM non_existent_table", (error) => {
-          if (error) {
-            if (error.message.includes("no such table")) {
-              console.error(
-                "Error fetching from non-existent table:",
-                error.message,
-              );
-            } else {
-              console.error("Unexpected error:", error.message);
-              return;
-            }
+          if (!(error instanceof Error)) return;
+          if (error.message.includes("no such table")) {
+            console.error(
+              "Error fetching from non-existent table:",
+              error.message,
+            );
+          } else {
+            return;
           }
 
           db.run("DROP TABLE books", () => {
