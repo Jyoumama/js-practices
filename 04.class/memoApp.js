@@ -44,7 +44,7 @@ export default class MemoApp {
     try {
       const input = await this.#getInputFromUser();
 
-      if (!input || input.trim() === "") {
+      if (input === "") {
         console.log("No input provided.");
         return;
       }
