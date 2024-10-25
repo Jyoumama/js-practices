@@ -10,45 +10,39 @@ export default class MemoApp {
   }
 
   async run() {
+    await this.#memoRepo.createTable();
+
+    const args = process.argv.slice(2);
+
     try {
-      await this.#memoRepo.createTable();
-
-      const args = process.argv.slice(2);
-
       if (args.length === 0) {
-        await this.addMemo();
+        await this.#addMemo();
       } else if (args.includes("-l")) {
-        await this.listMemos();
+        await this.#listMemos();
       } else if (args.includes("-r")) {
-        await this.readMemo();
+        await this.#readMemo();
       } else if (args.includes("-d")) {
-        await this.deleteMemo();
+        await this.#deleteMemo();
       } else {
         console.log("Unknown command");
         process.exit(1);
       }
     } catch (err) {
-      if (typeof err === "object" && err !== null) {
-        console.error("Error running the application:", err);
+      if (err instanceof Error) {
+        console.error("Error executing command:", err.message);
       } else {
         console.error("An unknown error occurred:", err);
       }
-      throw err;
     }
   }
 
-  async addMemo() {
-    process.on("SIGINT", () => {
-      console.log("\nOperation was canceled by user.");
-      process.exit(1);
-    });
-
+  async #addMemo() {
     if (process.stdin.isTTY) {
       console.log("Enter your memo (end with Ctrl+D):");
     }
 
     try {
-      const input = await this.getInputFromUser();
+      const input = await this.#getInputFromUser();
 
       if (!input || input.trim() === "") {
         console.log("No input provided.");
@@ -57,10 +51,10 @@ export default class MemoApp {
 
       const memo = new MemoContent(null, input.trim());
       await this.#memoRepo.addMemo(memo);
-      console.log("memo added successfully");
+      console.log("Memo added successfully");
     } catch (err) {
-      if (typeof err === "object" && err !== null) {
-        console.error("Error adding memo:", err);
+      if (err instanceof Error) {
+        console.error("Error adding memo:", err.message);
       } else {
         console.error("An unknown error occurred:", err);
       }
@@ -68,7 +62,12 @@ export default class MemoApp {
     }
   }
 
-  async getInputFromUser() {
+  async #getInputFromUser() {
+    process.on("SIGINT", () => {
+      console.log("\nOperation was canceled by user.");
+      process.exit(1);
+    });
+
     return new Promise((resolve) => {
       let dataBuffer = "";
       process.stdin.on("data", (data) => {
@@ -81,24 +80,7 @@ export default class MemoApp {
     });
   }
 
-  async promptToAddNewMemo() {
-    const { shouldAddNewMemo } = await inquirer.prompt([
-      {
-        type: "confirm",
-        name: "shouldAddNewMemo",
-        message: "No memos found. Would you like to add a new memo?",
-        default: false,
-      },
-    ]);
-
-    if (shouldAddNewMemo) {
-      await this.addMemo();
-    } else {
-      console.log("No memos were added.");
-    }
-  }
-
-  async listMemos() {
+  async #listMemos() {
     try {
       const memos = await this.#memoRepo.getAllMemos();
 
@@ -111,8 +93,8 @@ export default class MemoApp {
         console.log(memo.title);
       });
     } catch (err) {
-      if (typeof err === "object" && err !== null) {
-        console.error("Error fetching memos:", err);
+      if (err instanceof Error) {
+        console.error("Error fetching memos:", err.message);
       } else {
         console.error("An unknown error occurred:", err);
       }
@@ -120,13 +102,13 @@ export default class MemoApp {
     }
   }
 
-  async readMemo() {
+  async #readMemo() {
     let memos = [];
     try {
       memos = await this.#memoRepo.getAllMemos();
     } catch (err) {
-      if (typeof err === "object" && err !== null) {
-        console.error("Error fetching memos:", err);
+      if (err instanceof Error) {
+        console.error("Error fetching memos:", err.message);
       } else {
         console.error("An unknown error occurred:", err);
       }
@@ -135,7 +117,7 @@ export default class MemoApp {
 
     if (memos.length === 0) {
       console.log("No memos found.");
-      await this.promptToAddNewMemo();
+      await this.#promptToAddNewMemo();
       return;
     }
 
@@ -156,11 +138,7 @@ export default class MemoApp {
 
       console.log(`Content:\n${selectedMemo.content}`);
     } catch (err) {
-      if (
-        typeof err === "object" &&
-        err !== null &&
-        err.name === "ExitPromptError"
-      ) {
+      if (err instanceof Error && err.name === "ExitPromptError") {
         console.log("Prompt was canceled by user.");
       } else {
         console.error("Error prompting for memo selection:", err);
@@ -169,13 +147,13 @@ export default class MemoApp {
     }
   }
 
-  async deleteMemo() {
+  async #deleteMemo() {
     let memos = [];
     try {
       memos = await this.#memoRepo.getAllMemos();
     } catch (err) {
-      if (typeof err === "object" && err !== null) {
-        console.error("Error fetching memos:", err);
+      if (err instanceof Error) {
+        console.error("Error fetching memos:", err.message);
       } else {
         console.error("An unknown error occurred:", err);
       }
@@ -184,7 +162,7 @@ export default class MemoApp {
 
     if (memos.length === 0) {
       console.log("No memos found.");
-      await this.promptToAddNewMemo();
+      await this.#promptToAddNewMemo();
       return;
     }
 
@@ -206,16 +184,30 @@ export default class MemoApp {
       await this.#memoRepo.deleteMemo(selectedMemo);
       console.log("Memo deleted successfully");
     } catch (err) {
-      if (
-        typeof err === "object" &&
-        err !== null &&
-        err.name === "ExitPromptError"
-      ) {
+      if (err instanceof Error && err.name === "ExitPromptError") {
         console.log("Prompt was canceled by user.");
       } else {
         console.error("Error prompting for memo deletion:", err);
-        throw err;
       }
+      throw err;
+    }
+  }
+
+  async #promptToAddNewMemo() {
+    const { shouldAddNewMemo } = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "shouldAddNewMemo",
+        message: "No memos found. Would you like to add a new memo?",
+        default: false,
+      },
+    ]);
+
+    if (shouldAddNewMemo) {
+      await this.#addMemo();
+    } else {
+      console.log("No memos were added.");
     }
   }
 }
+
