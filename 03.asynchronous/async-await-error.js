@@ -5,7 +5,7 @@ const db = new sqlite3.Database(":memory:");
 
 await runAsync(
   db,
-  "CREATE TABLE books (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL UNIQUE)",
+  "CREATE TABLE books (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL UNIQUE)"
 );
 console.log("Table created");
 
@@ -17,8 +17,8 @@ console.log("Inserted record with ID:", result1.lastID);
 try {
   await runAsync(db, "INSERT INTO books (title) VALUES (?)", ["Book 1"]);
 } catch (error) {
-  if (!(error instanceof Error)) throw error;
   if (
+    error instanceof Error &&
     error.code === "SQLITE_CONSTRAINT" &&
     error.message.includes("UNIQUE constraint failed")
   ) {
@@ -31,8 +31,8 @@ try {
 try {
   await getAsync(db, "SELECT * FROM non_existent_table");
 } catch (error) {
-  if (!(error instanceof Error)) throw error;
   if (
+    error instanceof Error &&
     error.code === "SQLITE_ERROR" &&
     error.message.includes("no such table")
   ) {
