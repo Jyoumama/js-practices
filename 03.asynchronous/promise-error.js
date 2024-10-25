@@ -5,7 +5,7 @@ const db = new sqlite3.Database(":memory:");
 
 runAsync(
   db,
-  "CREATE TABLE books (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL UNIQUE)",
+  "CREATE TABLE books (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL UNIQUE)"
 )
   .then(() => {
     console.log("Table created");
@@ -17,9 +17,9 @@ runAsync(
   })
   .catch((error) => {
     if (
-      typeof error === "object" &&
-      error !== null &&
-      error.code === "SQLITE_CONSTRAINT"
+      error instanceof Error &&
+      error.code === "SQLITE_CONSTRAINT" &&
+      error.message.includes("UNIQUE constraint failed")
     ) {
       console.error("Error inserting duplicate record:", error.message);
     } else {
@@ -29,8 +29,8 @@ runAsync(
   .then(() => getAsync(db, "SELECT * FROM non_existent_table"))
   .catch((error) => {
     if (
-      typeof error === "object" &&
-      error !== null &&
+      error instanceof Error &&
+      error.code === "SQLITE_ERROR" &&
       error.message.includes("no such table")
     ) {
       console.error("Error fetching from non-existent table:", error.message);
