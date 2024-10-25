@@ -49,7 +49,7 @@ export default class MemoApp {
         return;
       }
 
-      const memo = new MemoContent(null, input.trim());
+      const memo = new MemoContent(null, input);
       await this.#memoRepo.addMemo(memo);
       console.log("Memo added successfully");
     } catch (err) {
