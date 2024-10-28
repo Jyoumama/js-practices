@@ -31,15 +31,11 @@ export default class MemoRepository {
           `.trim(),  
         );
     } catch (err) {
-      throw new Error("Error initializing database:" + err.message);
+      throw new Error("Error initializing database:", { cause: err });
     }
   }
 
   async addMemo(memo) {
-    if (!memo.content || memo.content.trim() === "") {
-      throw new Error("Memo content cannot be null or empty.");
-    }
-
     try {
       await this.promisedDB.run(
         "INSERT INTO memos (content, created_at) VALUES (?, ?)",

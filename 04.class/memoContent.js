@@ -4,6 +4,10 @@ export default class MemoContent {
   #createdAt;
 
   constructor(id = null, content = "", createdAt = new Date()) {
+    if (!content || content.trim() === "") {
+      throw new Error("Memo content cannot be null or empty.");
+    }
+    
     this.#id = id;
     this.#content = content && content.trim() !== "" ? content : null;
     this.#createdAt = new Date(createdAt);
