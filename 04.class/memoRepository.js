@@ -8,15 +8,15 @@ export default class MemoRepository {
   }
 
   run(sql, params = []) {
-    return promisify(this.db.run).bind(this.db)(sql,params);
+    return promisify(this.db.run).bind(this.db)(sql, params);
   }
 
   get(sql, params = []) {
-    return promisify(this.db.get).bind(this.db)(sql,params);
+    return promisify(this.db.get).bind(this.db)(sql, params);
   }
-  
+
   all(sql, params = []) {
-    return promisify(this.db.all).bind(this.db)(sql,params);
+    return promisify(this.db.all).bind(this.db)(sql, params);
   }
 
   async createTable() {
@@ -28,8 +28,8 @@ export default class MemoRepository {
             content TEXT NOT NULL,
             created_at DATETIME NOT NULL
           )
-          `.trim(),  
-        );
+          `.trim(),
+      );
     } catch (err) {
       throw new Error("Error initializing database:", { cause: err });
     }
@@ -37,12 +37,12 @@ export default class MemoRepository {
 
   async addMemo(memo) {
     try {
-      await this.promisedDB.run(
+      await this.run(
         "INSERT INTO memos (content, created_at) VALUES (?, ?)",
         [memo.content, memo.createdAt.getTime()],
       );
     } catch (err) {
-      throw new Error("Error adding memo:" + err.message);
+      throw new Error("Error adding memo:", { cause: err });
     }
   }
 
@@ -56,7 +56,7 @@ export default class MemoRepository {
           new MemoContent(row.id, row.content || "", new Date(row.created_at)),
       );
     } catch (err) {
-      throw new Error("Error getting memos:" + err.message);
+      throw new Error("Error getting memos:", { cause: err });
     }
   }
 
@@ -64,7 +64,7 @@ export default class MemoRepository {
     try {
       await this.run("DELETE FROM memos WHERE id = ?", [memo.id]);
     } catch (err) {
-      throw new Error("Error deleting memo:" + err.message);
+      throw new Error("Error deleting memo:", { cause: err });
     }
   }
 }
