@@ -6,7 +6,6 @@ export default class MemoContent {
   constructor(id = null, content = "", createdAt = new Date()) {
     this.#id = id;
     this.#content = content && content.trim() !== "" ? content : null;
-    //this.#content = content.trim() === "" ? null : content;
     this.#createdAt = new Date(createdAt);
     if (isNaN(this.#createdAt)) {
       this.#createdAt = new Date();
