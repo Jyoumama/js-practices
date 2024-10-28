@@ -21,13 +21,15 @@ export default class MemoRepository {
 
   async createTable() {
     try {
-      await this.run(`
+      await this.run(
+        `
           CREATE TABLE IF NOT EXISTS memos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             content TEXT NOT NULL,
-            created_at INTEGER NOT NULL
+            created_at DATETIME NOT NULL
           )
-        `);
+          `.trim(),  
+        );
     } catch (err) {
       throw new Error("Error initializing database:" + err.message);
     }
