@@ -5,16 +5,23 @@ import MemoContent from "./memoContent.js";
 export default class MemoRepository {
   constructor() {
     this.db = new sqlite3.Database("./memos.db");
-    this.promisedDB = {
-      run: promisify(this.db.run).bind(this.db),
-      get: promisify(this.db.get).bind(this.db),
-      all: promisify(this.db.all).bind(this.db),
-    };
+  }
+
+  run(sql, params = []) {
+    return promisify(this.db.run).bind(this.db)(sql,params);
+  }
+
+  get(sql, params = []) {
+    return promisify(this.db.get).bind(this.db)(sql,params);
+  }
+  
+  all(sql, params = []) {
+    return promisify(this.db.all).bind(this.db)(sql,params);
   }
 
   async createTable() {
     try {
-      await this.promisedDB.run(`
+      await this.run(`
           CREATE TABLE IF NOT EXISTS memos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             content TEXT NOT NULL,
@@ -43,7 +50,7 @@ export default class MemoRepository {
 
   async getAllMemos() {
     try {
-      const rows = await this.promisedDB.all(
+      const rows = await this.all(
         "SELECT id, content, created_at FROM memos ORDER BY id DESC",
       );
       return rows.map(
@@ -57,7 +64,7 @@ export default class MemoRepository {
 
   async deleteMemo(memo) {
     try {
-      await this.promisedDB.run("DELETE FROM memos WHERE id = ?", [memo.id]);
+      await this.run("DELETE FROM memos WHERE id = ?", [memo.id]);
     } catch (err) {
       throw new Error("Error deleting memo:" + err.message);
     }
