@@ -37,10 +37,10 @@ export default class MemoRepository {
 
   async addMemo(memo) {
     try {
-      await this.run(
-        "INSERT INTO memos (content, created_at) VALUES (?, ?)",
-        [memo.content, memo.createdAt.getTime()],
-      );
+      await this.run("INSERT INTO memos (content, created_at) VALUES (?, ?)", [
+        memo.content,
+        memo.createdAt.getTime(),
+      ]);
     } catch (err) {
       throw new Error("Error adding memo:", { cause: err });
     }

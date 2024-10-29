@@ -4,16 +4,16 @@ export default class MemoContent {
   #createdAt;
 
   constructor(id = null, content, createdAt = new Date()) {
-    if(id!== null && typeof id !== "number") {
+    if (id !== null && typeof id !== "number") {
       throw new Error("Invalid ID: ID must be a number or null.");
     }
 
-    if(typeof content !== "string"|| content.trim() === ""){
+    if (typeof content !== "string" || content.trim() === "") {
       throw new Error("Memo content cannot be null or empty.");
     }
 
     const parsedDate = new Date(createdAt);
-    if(!(parsedDate instanceof Date)|| isNaN(parsedDate.getTime())){
+    if (!(parsedDate instanceof Date) || isNaN(parsedDate.getTime())) {
       throw new Error("invalid date:createdAt must be a valid Date.");
     }
 
