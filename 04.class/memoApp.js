@@ -33,13 +33,7 @@ export default class MemoApp {
         process.exit(1);
       }
     } catch (err) {
-      if (err?.message === "SIGINT") {
-        console.log("Operation was canceled by user.");
-      } else if (err instanceof Error) {
-        console.error("Error executing command:", err.message);
-      } else {
-        console.error("An unknown error occurred:", err);
-      }
+      this.#handleError(err);
     }
   }
 
@@ -60,13 +54,7 @@ export default class MemoApp {
       await this.#memoRepo.addMemo(memo);
       console.log("Memo added successfully");
     } catch (err) {
-      if (err?.message === "SIGINT") {
-        console.log("Operation was canceled by user.");
-      } else if (err instanceof Error) {
-        console.error("Error adding memo:", err.message);
-      } else {
-        console.error("An unknown error occurred:", err);
-      }
+      this.#handleError(err, "adding memo");
     }
   }
 
@@ -83,6 +71,7 @@ export default class MemoApp {
       process.stdin.on("error", (err) => {
         reject(err);
       });
+      process.stdin.resume();
     });
   }
 
@@ -99,13 +88,7 @@ export default class MemoApp {
         console.log(memo.title);
       });
     } catch (err) {
-      if (err?.message === "SIGINT") {
-        console.log("Operation was canceled by user.");
-      } else if (err instanceof Error) {
-        console.error("Error fetching memos:", err.message);
-      } else {
-        console.error("An unknown error occurred:", err);
-      }
+      this.#handleError(err, "fetching memos");
     }
   }
 
@@ -135,15 +118,7 @@ export default class MemoApp {
 
       console.log(`Content:\n${selectedMemo.content}`);
     } catch (err) {
-      if (
-        err?.isTtyError ||
-        err?.message === "SIGINT" ||
-        err?.name === "ExitPromptError"
-      ) {
-        console.log("Prompt was canceled by user.");
-      } else {
-        console.error("Error prompting for memo selection:", err);
-      }
+      this.#handleError(err, "prompting for memo selection");
     }
   }
 
@@ -174,15 +149,7 @@ export default class MemoApp {
       await this.#memoRepo.deleteMemo(selectedMemo);
       console.log("Memo deleted successfully");
     } catch (err) {
-      if (
-        err?.isTtyError ||
-        err?.message === "SIGINT" ||
-        err?.name === "ExitPromptError"
-      ) {
-        console.log("Prompt was canceled by user.");
-      } else {
-        console.error("Error prompting for memo deletion:", err);
-      }
+      this.#handleError(err, "prompting for memo deletion");
     }
   }
 
@@ -203,15 +170,28 @@ export default class MemoApp {
         console.log("No memos were added.");
       }
     } catch (err) {
-      if (
-        err?.isTtyError ||
-        err?.message === "SIGINT" ||
-        err?.name === "ExitPromptError"
-      ) {
-        console.log("Prompt was canceled by user.");
-      } else {
+      this.#handleError(err, "adding new memo");
+    }
+  }
+
+  #handleError(err, context = "executing command") {
+    if (
+      err?.isTtyError ||
+      err?.message === "SIGINT" ||
+      err?.name === "ExitPromptError"
+    ) {
+      console.log("Prompt was canceled by user.");
+    } else if (err instanceof Error) {
+      console.error(`Error ${context}:`, err.message);
+      if (this.#isCriticalError(err)) {
         throw err;
       }
+    } else {
+      console.error("An unknown error occurred:", err);
     }
+  }
+
+  #isCriticalError(err) {
+    return err.message.includes("database") || err.message.includes("critical");
   }
 }
