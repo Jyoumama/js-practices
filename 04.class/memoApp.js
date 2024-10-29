@@ -106,22 +106,13 @@ export default class MemoApp {
     let memos = [];
     try {
       memos = await this.#memoRepo.getAllMemos();
-    } catch (err) {
-      if (err instanceof Error) {
-        console.error("Error fetching memos:", err.message);
-      } else {
-        console.error("An unknown error occurred:", err);
-      }
-      throw err;
-    }
-
-    if (memos.length === 0) {
+    
+      if (memos.length === 0) {
       console.log("No memos found.");
       await this.#promptToAddNewMemo();
       return;
     }
 
-    try {
       const choices = memos.map((memo) => ({
         name: memo.title,
         value: memo,
