@@ -42,8 +42,13 @@ export default class MemoApp {
       console.log("Enter your memo (end with Ctrl+D):");
     }
 
+    let input;
     try {
-      const input = await this.#getInputFromUser();
+      input = await this.#getInputFromUser();
+    } catch(err){
+      this.#handleError(err, "getting input from user");
+      return;
+    }
 
       if (input === "") {
         console.log("No input provided.");
@@ -53,10 +58,7 @@ export default class MemoApp {
       const memo = new MemoContent(null, input);
       await this.#memoRepo.addMemo(memo);
       console.log("Memo added successfully");
-    } catch (err) {
-      this.#handleError(err, "adding memo");
     }
-  }
 
   async #getInputFromUser() {
     return new Promise((resolve, reject) => {
@@ -76,8 +78,13 @@ export default class MemoApp {
   }
 
   async #listMemos() {
+    let memos;
     try {
-      const memos = await this.#memoRepo.getAllMemos();
+      memos = await this.#memoRepo.getAllMemos();
+    } catch(err){
+      this.#handleError(err, "fetching memos");
+      return;
+    }
 
       if (memos.length === 0) {
         console.log("No memos found.");
@@ -87,26 +94,23 @@ export default class MemoApp {
       memos.forEach((memo) => {
         console.log(memo.title);
       });
-    } catch (err) {
-      this.#handleError(err, "fetching memos");
     }
-  }
 
   async #readMemo() {
+    const memos = await this.#memoRepo.getAllMemos();
+
+    if (memos.length === 0) {
+      console.log("No memos found.");
+      await this.#promptToAddNewMemo();
+      return;
+    }
+
+    const choices = memos.map((memo) => ({
+      name: memo.title,
+      value: memo,
+    }));
+
     try {
-      const memos = await this.#memoRepo.getAllMemos();
-
-      if (memos.length === 0) {
-        console.log("No memos found.");
-        await this.#promptToAddNewMemo();
-        return;
-      }
-
-      const choices = memos.map((memo) => ({
-        name: memo.title,
-        value: memo,
-      }));
-
       const { selectedMemo } = await inquirer.prompt([
         {
           type: "list",
@@ -115,7 +119,6 @@ export default class MemoApp {
           choices,
         },
       ]);
-
       console.log(`Content:\n${selectedMemo.content}`);
     } catch (err) {
       this.#handleError(err, "prompting for memo selection");
@@ -123,20 +126,20 @@ export default class MemoApp {
   }
 
   async #deleteMemo() {
+    const memos = await this.#memoRepo.getAllMemos();
+
+    if (memos.length === 0) {
+      console.log("No memos found.");
+      await this.#promptToAddNewMemo();
+      return;
+    }
+
+    const choices = memos.map((memo) => ({
+      name: memo.title,
+      value: memo,
+    }));
+
     try {
-      const memos = await this.#memoRepo.getAllMemos();
-
-      if (memos.length === 0) {
-        console.log("No memos found.");
-        await this.#promptToAddNewMemo();
-        return;
-      }
-
-      const choices = memos.map((memo) => ({
-        name: memo.title,
-        value: memo,
-      }));
-
       const { selectedMemo } = await inquirer.prompt([
         {
           type: "list",
