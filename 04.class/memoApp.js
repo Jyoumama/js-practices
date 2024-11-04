@@ -62,13 +62,13 @@ export default class MemoApp {
 
   async #getInputFromUser() {
     return new Promise((resolve, reject) => {
-      let dataBuffer = "";
+      let input = "";
       process.stdin.on("data", (data) => {
-        dataBuffer += data;
+        input += data;
       });
       process.stdin.on("end", () => {
         process.stdin.pause();
-        resolve(dataBuffer);
+        resolve(input);
       });
       process.stdin.on("error", (err) => {
         reject(err);
