@@ -45,20 +45,20 @@ export default class MemoApp {
     let input;
     try {
       input = await this.#getInputFromUser();
-    } catch(err){
+    } catch (err) {
       this.#handleError(err, "getting input from user");
       return;
     }
 
-      if (input === "") {
-        console.log("No input provided.");
-        return;
-      }
-
-      const memo = new MemoContent(null, input);
-      await this.#memoRepo.addMemo(memo);
-      console.log("Memo added successfully");
+    if (input === "") {
+      console.log("No input provided.");
+      return;
     }
+
+    const memo = new MemoContent(null, input);
+    await this.#memoRepo.addMemo(memo);
+    console.log("Memo added successfully");
+  }
 
   async #getInputFromUser() {
     return new Promise((resolve, reject) => {
@@ -81,20 +81,20 @@ export default class MemoApp {
     let memos;
     try {
       memos = await this.#memoRepo.getAllMemos();
-    } catch(err){
+    } catch (err) {
       this.#handleError(err, "fetching memos");
       return;
     }
 
-      if (memos.length === 0) {
-        console.log("No memos found.");
-        return;
-      }
-
-      memos.forEach((memo) => {
-        console.log(memo.title);
-      });
+    if (memos.length === 0) {
+      console.log("No memos found.");
+      return;
     }
+
+    memos.forEach((memo) => {
+      console.log(memo.title);
+    });
+  }
 
   async #readMemo() {
     const memos = await this.#memoRepo.getAllMemos();
@@ -187,15 +187,15 @@ export default class MemoApp {
       console.log("Prompt was canceled by user.");
     } else if (err instanceof Error) {
       console.error(`Error ${context}:`, err.message);
-      if (this.#isCriticalError(err)) {
+
+      if (
+        err.message.includes("database") ||
+        err.message.includes("critical")
+      ) {
         throw err;
       }
     } else {
       console.error("An unknown error occurred:", err);
     }
-  }
-
-  #isCriticalError(err) {
-    return err.message.includes("database") || err.message.includes("critical");
   }
 }
