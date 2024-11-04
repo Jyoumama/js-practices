@@ -119,7 +119,8 @@ export default class MemoApp {
           choices,
         },
       ]);
-      console.log(`Content:\n${selectedMemo.content}`);
+      console.log("Content:");
+      console.log(selectedMemo.content);
     } catch (err) {
       this.#handleError(err, "prompting for memo selection");
     }
