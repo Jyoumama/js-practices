@@ -1,10 +1,10 @@
-import sqlite3 from "sqlite3";
+import { Database } from "sqlite3";
 import { promisify } from "util";
 import MemoContent from "./memoContent.js";
 
 export default class MemoRepository {
   constructor() {
-    this.db = new sqlite3.Database("./memos.db");
+    this.db = new Database("./memos.db");
   }
 
   run(sql, params = []) {
