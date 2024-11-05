@@ -3,30 +3,29 @@ export default class MemoContent {
   #content;
   #createdAt;
 
-  constructor(id = null, content, createdAt = new Date()) {
-    if (id !== null && typeof id !== "number") {
-      throw new Error("Invalid ID: ID must be a number or null.");
+  constructor(id, content, createdAt) {
+    if (id !== undefined && id !== null && typeof id !== "number") {
+      throw new Error("Invalid ID: ID must be a number, undefined, or null.");
     }
 
-    if (typeof content !== "string" || content.trim() === "") {
+    if (typeof content !== "string" || content === "") {
       throw new Error("Memo content cannot be null or empty.");
     }
 
-    const parsedDate = new Date(createdAt);
-    if (!(parsedDate instanceof Date) || isNaN(parsedDate.getTime())) {
-      throw new Error("invalid date:createdAt must be a valid Date.");
+    if (!(createdAt instanceof Date) || isNaN(createdAt.getTime())) {
+      throw new Error("Invalid date:createdAt must be a valid Date.");
     }
 
     this.#id = id;
-    this.#content = content.trim();
-    this.#createdAt = parsedDate;
+    this.#content = content;
+    this.#createdAt = createdAt;
   }
 
   get id() {
     return this.#id;
   }
 
-  get title() {
+  getFirstLine() {
     return this.#content ? this.#content.split("\n")[0] : "Untitled";
   }
 
