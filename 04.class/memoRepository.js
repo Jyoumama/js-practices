@@ -7,64 +7,43 @@ export default class MemoRepository {
     this.db = new Database("./memos.db");
   }
 
-  run(sql, params = []) {
-    return promisify(this.db.run).bind(this.db)(sql, params);
+  #run(sql, params = []) {
+    return promisify(this.db.run.bind(this.db))(sql, params);
   }
 
-  get(sql, params = []) {
-    return promisify(this.db.get).bind(this.db)(sql, params);
-  }
-
-  all(sql, params = []) {
-    return promisify(this.db.all).bind(this.db)(sql, params);
+  #all(sql, params = []) {
+    return promisify(this.db.all.bind(this.db))(sql, params);
   }
 
   async createTable() {
-    try {
-      await this.run(
-        `
-          CREATE TABLE IF NOT EXISTS memos (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            content TEXT NOT NULL,
-            created_at DATETIME NOT NULL
-          )
-          `.trim(),
-      );
-    } catch (err) {
-      throw new Error("Error initializing database:", { cause: err });
-    }
+    await this.#run(
+      `
+        CREATE TABLE IF NOT EXISTS memos (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          content TEXT NOT NULL,
+          created_at DATETIME NOT NULL
+        )
+    `.trim(),
+    );
   }
 
   async addMemo(memo) {
-    try {
-      await this.run("INSERT INTO memos (content, created_at) VALUES (?, ?)", [
-        memo.content,
-        memo.createdAt.getTime(),
-      ]);
-    } catch (err) {
-      throw new Error("Error adding memo:", { cause: err });
-    }
+    await this.#run("INSERT INTO memos (content, created_at) VALUES (?, ?)", [
+      memo.content,
+      memo.createdAt.toISOString(),
+    ]);
   }
 
   async getAllMemos() {
-    try {
-      const rows = await this.all(
-        "SELECT id, content, created_at FROM memos ORDER BY id DESC",
-      );
-      return rows.map(
-        (row) =>
-          new MemoContent(row.id, row.content || "", new Date(row.created_at)),
-      );
-    } catch (err) {
-      throw new Error("Error getting memos:", { cause: err });
-    }
+    const rows = await this.#all(
+      "SELECT id, content, created_at FROM memos ORDER BY id DESC",
+    );
+    return rows.map(
+      (row) => new MemoContent(row.id, row.content, new Date(row.created_at)),
+    );
   }
 
   async deleteMemo(memo) {
-    try {
-      await this.run("DELETE FROM memos WHERE id = ?", [memo.id]);
-    } catch (err) {
-      throw new Error("Error deleting memo:", { cause: err });
-    }
+    await this.#run("DELETE FROM memos WHERE id = ?", [memo.id]);
   }
 }
