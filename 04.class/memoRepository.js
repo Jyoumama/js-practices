@@ -1,4 +1,5 @@
-import { Database } from "sqlite3";
+import sqlite3 from "sqlite3";
+const { Database } = sqlite3;
 import { promisify } from "util";
 import MemoContent from "./memoContent.js";
 
