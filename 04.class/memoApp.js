@@ -92,7 +92,7 @@ export default class MemoApp {
     }
 
     memos.forEach((memo) => {
-      console.log(memo.title);
+      console.log(memo.getFirstLine());
     });
   }
 
@@ -106,7 +106,7 @@ export default class MemoApp {
     }
 
     const choices = memos.map((memo) => ({
-      name: memo.title,
+      name: memo.getFirstLine(),
       value: memo,
     }));
 
@@ -136,7 +136,7 @@ export default class MemoApp {
     }
 
     const choices = memos.map((memo) => ({
-      name: memo.title,
+      name: memo.getFirstLine(),
       value: memo,
     }));
 
