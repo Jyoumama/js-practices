@@ -3,7 +3,7 @@ export default class MemoContent {
   #content;
   #createdAt;
 
-  constructor(id, content, createdAt) {
+  constructor(id, content, createdAt = new Date()) {
     if (id !== undefined && id !== null && typeof id !== "number") {
       throw new Error("Invalid ID: ID must be a number, undefined, or null.");
     }
