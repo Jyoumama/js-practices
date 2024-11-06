@@ -25,7 +25,7 @@ export default class MemoContent {
     return this.#id;
   }
 
-  getFirstLine() {
+  get firstLine() {
     return this.#content ? this.#content.split("\n")[0] : "Untitled";
   }
 
