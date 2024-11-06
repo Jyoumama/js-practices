@@ -24,7 +24,7 @@ export default class MemoRepository {
           content TEXT NOT NULL,
           created_at DATETIME NOT NULL
         )
-    `.trim(),
+      `.trim()
     );
   }
 
