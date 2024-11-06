@@ -12,7 +12,7 @@ export default class MemoContent {
       throw new Error("Memo content cannot be null or empty.");
     }
 
-    if (!(createdAt instanceof Date)) {
+    if (!(createdAt instanceof Date)|| createdAt.toString() === "Invalid Date") {
       throw new Error("Invalid date:CreatedAt must be a Date instance.");
     }
 
