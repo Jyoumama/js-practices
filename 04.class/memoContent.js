@@ -3,7 +3,7 @@ export default class MemoContent {
   #content;
   #createdAt;
 
-  constructor(id, content, createdAt = new Date()) {
+  constructor(id, content, createdAt) {
     if (id !== undefined && id !== null && typeof id !== "number") {
       throw new Error("Invalid ID: ID must be a number, undefined, or null.");
     }
@@ -12,8 +12,8 @@ export default class MemoContent {
       throw new Error("Memo content cannot be null or empty.");
     }
 
-    if (!(createdAt instanceof Date) || isNaN(createdAt.getTime())) {
-      throw new Error("Invalid date:createdAt must be a valid Date.");
+    if (!(createdAt instanceof Date)) {
+      throw new Error("Invalid date:CreatedAt must be a Date instance.");
     }
 
     this.#id = id;
