@@ -1,42 +1,28 @@
-import sqlite3 from "sqlite3";
-const { Database } = sqlite3;
-import { promisify } from "util";
+import SQLiteClient from "./sqliteClient.js";
 import MemoContent from "./memoContent.js";
 
 export default class MemoRepository {
+  #dbClient;
+
   constructor() {
-    this.db = new Database("./memos.db");
-  }
-
-  #run(sql, params = []) {
-    return promisify(this.db.run.bind(this.db))(sql, params);
-  }
-
-  #all(sql, params = []) {
-    return promisify(this.db.all.bind(this.db))(sql, params);
+    this.#dbClient = new SQLiteClient("./memos.db");
   }
 
   async createTable() {
-    await this.#run(
-      `
-        CREATE TABLE IF NOT EXISTS memos (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          content TEXT NOT NULL,
-          created_at DATETIME NOT NULL
-        )
-      `.trim(),
+    await this.#dbClient.run(
+      "CREATE TABLE IF NOT EXISTS memos (id INTEGER PRIMARY KEY AUTOINCREMENT, content TEXT NOT NULL, created_at DATETIME NOT NULL)",
     );
   }
 
   async addMemo(memo) {
-    await this.#run("INSERT INTO memos (content, created_at) VALUES (?, ?)", [
-      memo.content,
-      memo.createdAt.toISOString(),
-    ]);
+    await this.#dbClient.run(
+      "INSERT INTO memos (content, created_at) VALUES (?, ?)",
+      [memo.content, memo.createdAt.toISOString()],
+    );
   }
 
   async getAllMemos() {
-    const rows = await this.#all(
+    const rows = await this.#dbClient.all(
       "SELECT id, content, created_at FROM memos ORDER BY id DESC",
     );
     return rows.map(
@@ -45,6 +31,10 @@ export default class MemoRepository {
   }
 
   async deleteMemo(memo) {
-    await this.#run("DELETE FROM memos WHERE id = ?", [memo.id]);
+    await this.#dbClient.run("DELETE FROM memos WHERE id = ?", [memo.id]);
+  }
+
+  async close() {
+    await this.#dbClient.close();
   }
 }
