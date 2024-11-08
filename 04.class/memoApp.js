@@ -15,11 +15,11 @@ export default class MemoApp {
   }
 
   async run() {
-    await this.#memoRepo.createTable();
-
-    const args = process.argv.slice(2);
-
     try {
+      await this.#memoRepo.createTable();
+
+      const args = process.argv.slice(2);
+
       if (args.length === 0) {
         await this.#addMemo();
       } else if (args.includes("-l")) {
@@ -33,31 +33,29 @@ export default class MemoApp {
         process.exit(1);
       }
     } catch (err) {
-      this.#handleError(err);
+      this.#handleError(err, "running command");
     }
   }
 
   async #addMemo() {
-    if (process.stdin.isTTY) {
-      console.log("Enter your memo (end with Ctrl+D):");
-    }
-
-    let input;
     try {
-      input = await this.#getInputFromUser();
+      if (process.stdin.isTTY) {
+        console.log("Enter your memo (end with Ctrl+D):");
+      }
+
+      const content = await this.#getInputFromUser();
+
+      if (content.trim() === "") {
+        console.log("No input provided.");
+        return;
+      }
+
+      const memo = new MemoContent(null, content, new Date());
+      await this.#memoRepo.addMemo(memo);
+      console.log("Memo added successfully");
     } catch (err) {
-      this.#handleError(err, "getting input from user");
-      return;
+      this.#handleError(err, "adding memo");
     }
-
-    if (input === "") {
-      console.log("No input provided.");
-      return;
-    }
-
-    const memo = new MemoContent(null, input);
-    await this.#memoRepo.addMemo(memo);
-    console.log("Memo added successfully");
   }
 
   async #getInputFromUser() {
@@ -78,39 +76,37 @@ export default class MemoApp {
   }
 
   async #listMemos() {
-    let memos;
     try {
-      memos = await this.#memoRepo.getAllMemos();
+      const memos = await this.#memoRepo.getAllMemos();
+
+      if (memos.length === 0) {
+        console.log("No memos found.");
+        return;
+      }
+
+      memos.forEach((memo) => {
+        console.log(memo.firstLine);
+      });
     } catch (err) {
       this.#handleError(err, "fetching memos");
-      return;
     }
-
-    if (memos.length === 0) {
-      console.log("No memos found.");
-      return;
-    }
-
-    memos.forEach((memo) => {
-      console.log(memo.firstLine);
-    });
   }
 
   async #readMemo() {
-    const memos = await this.#memoRepo.getAllMemos();
-
-    if (memos.length === 0) {
-      console.log("No memos found.");
-      await this.#promptToAddNewMemo();
-      return;
-    }
-
-    const choices = memos.map((memo) => ({
-      name: memo.firstLine,
-      value: memo,
-    }));
-
     try {
+      const memos = await this.#memoRepo.getAllMemos();
+
+      if (memos.length === 0) {
+        console.log("No memos found.");
+        await this.#promptToAddNewMemo();
+        return;
+      }
+
+      const choices = memos.map((memo) => ({
+        name: memo.firstLine,
+        value: memo,
+      }));
+
       const { selectedMemo } = await inquirer.prompt([
         {
           type: "list",
@@ -119,28 +115,29 @@ export default class MemoApp {
           choices,
         },
       ]);
+
       console.log("Content:");
       console.log(selectedMemo.content);
     } catch (err) {
-      this.#handleError(err, "prompting for memo selection");
+      this.#handleError(err, "reading memo");
     }
   }
 
   async #deleteMemo() {
-    const memos = await this.#memoRepo.getAllMemos();
-
-    if (memos.length === 0) {
-      console.log("No memos found.");
-      await this.#promptToAddNewMemo();
-      return;
-    }
-
-    const choices = memos.map((memo) => ({
-      name: memo.firstLine,
-      value: memo,
-    }));
-
     try {
+      const memos = await this.#memoRepo.getAllMemos();
+
+      if (memos.length === 0) {
+        console.log("No memos found.");
+        await this.#promptToAddNewMemo();
+        return;
+      }
+
+      const choices = memos.map((memo) => ({
+        name: memo.firstLine,
+        value: memo,
+      }));
+
       const { selectedMemo } = await inquirer.prompt([
         {
           type: "list",
@@ -153,7 +150,7 @@ export default class MemoApp {
       await this.#memoRepo.deleteMemo(selectedMemo);
       console.log("Memo deleted successfully");
     } catch (err) {
-      this.#handleError(err, "prompting for memo deletion");
+      this.#handleError(err, "deleting memo");
     }
   }
 
@@ -174,28 +171,50 @@ export default class MemoApp {
         console.log("No memos were added.");
       }
     } catch (err) {
-      this.#handleError(err, "adding new memo");
+      this.#handleError(err, "prompting to add new memo");
     }
   }
 
   #handleError(err, context = "executing command") {
-    if (
-      err?.isTtyError ||
-      err?.message === "SIGINT" ||
-      err?.name === "ExitPromptError"
-    ) {
-      console.log("Prompt was canceled by user.");
-    } else if (err instanceof Error) {
+    if (this.#isCliError(err)) {
+      console.log("Operation was canceled by user.");
+      return;
+    }
+
+    if (err instanceof Error) {
       console.error(`Error ${context}:`, err.message);
 
-      if (
-        err.message.includes("database") ||
-        err.message.includes("critical")
-      ) {
+      if (this.#isDatabaseError(err, context)) {
+        console.error(
+          "A database error occurred. Please check your connection.",
+        );
+        throw err;
+      }
+
+      if (this.#isCriticalError(err, context)) {
+        console.error(
+          "A critical error occurred. The operation cannot continue.",
+        );
         throw err;
       }
     } else {
       console.error("An unknown error occurred:", err);
     }
+  }
+
+  #isCliError(err) {
+    return (
+      err?.isTtyError ||
+      err?.message === "SIGINT" ||
+      err?.name === "ExitPromptError"
+    );
+  }
+
+  #isDatabaseError(err, context) {
+    return context.includes("database") && err.message.includes("database");
+  }
+
+  #isCriticalError(err, context) {
+    return context.includes("critical") || err.message.includes("critical");
   }
 }
