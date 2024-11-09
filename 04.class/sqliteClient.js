@@ -1,22 +1,22 @@
-import sqlite3 from "sqlite3";
 import { promisify } from "util";
+import sqlite3 from "sqlite3";
 
 export default class SQLiteClient {
   #db;
 
-  constructor(databaseFile) {
-    this.#db = new sqlite3.Database(databaseFile);
+  constructor(dbFilePath) {
+    this.#db = new sqlite3.Database(dbFilePath);
   }
 
-  run(sql, params = []) {
+  run(sql, params) {
     return promisify(this.#db.run.bind(this.#db))(sql, params);
   }
 
-  get(sql, params = []) {
+  get(sql, params) {
     return promisify(this.#db.get.bind(this.#db))(sql, params);
   }
 
-  all(sql, params = []) {
+  all(sql, params) {
     return promisify(this.#db.all.bind(this.#db))(sql, params);
   }
 
