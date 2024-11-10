@@ -9,15 +9,12 @@ export default class MemoContent {
     }
 
     if (typeof content !== "string" || content === "") {
-      throw new Error("Memo content cannot be null or empty.");
+      throw new Error("Invalid content: Memo content cannot be null or empty.");
     }
 
-    if (
-      !(createdAt instanceof Date) ||
-      createdAt.toString() === "Invalid Date"
-    ) {
+    if (!(createdAt instanceof Date) || isNaN(createdAt.getTime())) {
       throw new Error(
-        `Invalid date:CreatedAt must be a valid Date instance, received: ${createdAt}`,
+        `Invalid date: CreatedAt must be a valid Date instance. Received: ${createdAt}`,
       );
     }
 
