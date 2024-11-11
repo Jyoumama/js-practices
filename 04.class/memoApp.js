@@ -33,28 +33,36 @@ export default class MemoApp {
         process.exit(1);
       }
     } catch (err) {
-      this.#handleError(err, "running command");
+      console.error("Error running command:", err.message);
     }
   }
 
   async #addMemo() {
+    if (process.stdin.isTTY) {
+      console.log("Enter your memo (end with Ctrl+D):");
+    }
+
+    let content;
     try {
-      if (process.stdin.isTTY) {
-        console.log("Enter your memo (end with Ctrl+D):");
-      }
+      content = await this.#getInputFromUser();
+    } catch (err) {
+      console.error("Error reading user input:", err.message);
+      return;
+    }
 
-      const content = await this.#getInputFromUser();
+    if (content.trim() === "") {
+      console.log("No input provided.");
+      return;
+    }
 
-      if (content.trim() === "") {
-        console.log("No input provided.");
-        return;
-      }
+    const memo = new MemoContent(null, content, new Date());
 
-      const memo = new MemoContent(null, content, new Date());
+    try {
       await this.#memoRepo.addMemo(memo);
       console.log("Memo added successfully");
     } catch (err) {
-      this.#handleError(err, "adding memo");
+      console.error("Failed to add memo due to database error:", err.message);
+      throw err;
     }
   }
 
@@ -88,25 +96,37 @@ export default class MemoApp {
         console.log(memo.firstLine);
       });
     } catch (err) {
-      this.#handleError(err, "fetching memos");
+      console.error(
+        "Failed to fetch memos due to database error:",
+        err.message,
+      );
     }
   }
 
   async #readMemo() {
+    let memos;
     try {
-      const memos = await this.#memoRepo.getAllMemos();
+      memos = await this.#memoRepo.getAllMemos();
 
       if (memos.length === 0) {
         console.log("No memos found.");
         await this.#promptToAddNewMemo();
         return;
       }
+    } catch (err) {
+      console.error(
+        "Failed to fetch memos due to database error:",
+        err.message,
+      );
+      return;
+    }
 
-      const choices = memos.map((memo) => ({
-        name: memo.firstLine,
-        value: memo,
-      }));
+    const choices = memos.map((memo) => ({
+      name: memo.firstLine,
+      value: memo,
+    }));
 
+    try {
       const { selectedMemo } = await inquirer.prompt([
         {
           type: "list",
@@ -119,25 +139,38 @@ export default class MemoApp {
       console.log("Content:");
       console.log(selectedMemo.content);
     } catch (err) {
-      this.#handleError(err, "reading memo");
+      if (err.isTtyError || err.message.includes("User force closed")) {
+        console.log("Prompt was canceled by the user.");
+      } else {
+        console.error("Error during memo selection:", err.message);
+      }
     }
   }
 
   async #deleteMemo() {
+    let memos;
     try {
-      const memos = await this.#memoRepo.getAllMemos();
+      memos = await this.#memoRepo.getAllMemos();
 
       if (memos.length === 0) {
         console.log("No memos found.");
         await this.#promptToAddNewMemo();
         return;
       }
+    } catch (err) {
+      console.error(
+        "Failed to fetch memos due to database error:",
+        err.message,
+      );
+      return;
+    }
 
-      const choices = memos.map((memo) => ({
-        name: memo.firstLine,
-        value: memo,
-      }));
+    const choices = memos.map((memo) => ({
+      name: memo.firstLine,
+      value: memo,
+    }));
 
+    try {
       const { selectedMemo } = await inquirer.prompt([
         {
           type: "list",
@@ -150,7 +183,11 @@ export default class MemoApp {
       await this.#memoRepo.deleteMemo(selectedMemo);
       console.log("Memo deleted successfully");
     } catch (err) {
-      this.#handleError(err, "deleting memo");
+      if (err.isTtyError || err.message.includes("User force closed")) {
+        console.log("Prompt was canceled by the user.");
+      } else {
+        console.error("Error during memo deletion:", err.message);
+      }
     }
   }
 
@@ -171,50 +208,11 @@ export default class MemoApp {
         console.log("No memos were added.");
       }
     } catch (err) {
-      this.#handleError(err, "prompting to add new memo");
-    }
-  }
-
-  #handleError(err, context = "executing command") {
-    if (this.#isCliError(err)) {
-      console.log("Operation was canceled by user.");
-      return;
-    }
-
-    if (err instanceof Error) {
-      console.error(`Error ${context}:`, err.message);
-
-      if (this.#isDatabaseError(err, context)) {
-        console.error(
-          "A database error occurred. Please check your connection.",
-        );
-        throw err;
+      if (err.isTtyError || err.message.includes("User force closed")) {
+        console.log("Prompt was canceled by the user.");
+      } else {
+        console.error("Error during prompt for new memo:", err.message);
       }
-
-      if (this.#isCriticalError(err, context)) {
-        console.error(
-          "A critical error occurred. The operation cannot continue.",
-        );
-        throw err;
-      }
-    } else {
-      console.error("An unknown error occurred:", err);
     }
-  }
-
-  #isCliError(err) {
-    return (
-      err?.isTtyError ||
-      err?.message === "SIGINT" ||
-      err?.name === "ExitPromptError"
-    );
-  }
-
-  #isDatabaseError(err, context) {
-    return context.includes("database") && err.message.includes("database");
-  }
-
-  #isCriticalError(err, context) {
-    return context.includes("critical") || err.message.includes("critical");
   }
 }
