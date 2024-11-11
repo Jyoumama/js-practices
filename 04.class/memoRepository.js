@@ -9,9 +9,13 @@ export default class MemoRepository {
   }
 
   async createTable() {
-    await this.#dbClient.run(
-      "CREATE TABLE IF NOT EXISTS memos (id INTEGER PRIMARY KEY AUTOINCREMENT, content TEXT NOT NULL, created_at DATETIME NOT NULL)",
-    );
+    await this.#dbClient.run(`
+      CREATE TABLE IF NOT EXISTS memos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        content TEXT NOT NULL,
+        created_at DATETIME NOT NULL
+      )
+    `);
   }
 
   async addMemo(memo) {
