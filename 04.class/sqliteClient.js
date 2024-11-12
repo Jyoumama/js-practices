@@ -4,8 +4,8 @@ import sqlite3 from "sqlite3";
 export default class SQLiteClient {
   #db;
 
-  constructor(dbFilePath) {
-    this.#db = new sqlite3.Database(dbFilePath);
+  constructor(filePath) {
+    this.#db = new sqlite3.Database(filePath);
   }
 
   run(sql, params) {
