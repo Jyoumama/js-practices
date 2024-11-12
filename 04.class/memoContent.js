@@ -9,7 +9,7 @@ export default class MemoContent {
     }
 
     if (typeof content !== "string" || content === "") {
-      throw new Error("Invalid content: Memo content cannot be null or empty.");
+      throw new Error("Invalid content: Content cannot be null or empty.");
     }
 
     if (!(createdAt instanceof Date) || isNaN(createdAt.getTime())) {
