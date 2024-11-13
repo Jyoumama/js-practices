@@ -30,10 +30,10 @@ export default class MemoApp {
         await this.#deleteMemo();
       } else {
         console.log("Unknown command");
-        process.exit(1);
+        return;
       }
     } catch (err) {
-      console.error("Error running command:", err.message);
+      console.error("Critical error occurred:", err.message);
     }
   }
 
@@ -46,8 +46,7 @@ export default class MemoApp {
     try {
       content = await this.#getInputFromUser();
     } catch (err) {
-      console.error("Error reading user input:", err.message);
-      return;
+      throw new Error("Failed to get user input: " + err.message);
     }
 
     if (content.trim() === "") {
@@ -56,68 +55,29 @@ export default class MemoApp {
     }
 
     const memo = new MemoContent(null, content, new Date());
-
-    try {
-      await this.#memoRepo.addMemo(memo);
-      console.log("Memo added successfully");
-    } catch (err) {
-      console.error("Failed to add memo due to database error:", err.message);
-      throw err;
-    }
-  }
-
-  async #getInputFromUser() {
-    return new Promise((resolve, reject) => {
-      let input = "";
-      process.stdin.on("data", (data) => {
-        input += data;
-      });
-      process.stdin.on("end", () => {
-        process.stdin.pause();
-        resolve(input);
-      });
-      process.stdin.on("error", (err) => {
-        reject(err);
-      });
-      process.stdin.resume();
-    });
+    await this.#memoRepo.addMemo(memo);
+    console.log("Memo added successfully");
   }
 
   async #listMemos() {
-    try {
-      const memos = await this.#memoRepo.getAllMemos();
+    const memos = await this.#memoRepo.getAllMemos();
 
-      if (memos.length === 0) {
-        console.log("No memos found.");
-        return;
-      }
-
-      memos.forEach((memo) => {
-        console.log(memo.firstLine);
-      });
-    } catch (err) {
-      console.error(
-        "Failed to fetch memos due to database error:",
-        err.message,
-      );
+    if (memos.length === 0) {
+      console.log("No memos found.");
+      return;
     }
+
+    memos.forEach((memo) => {
+      console.log(memo.firstLine);
+    });
   }
 
   async #readMemo() {
-    let memos;
-    try {
-      memos = await this.#memoRepo.getAllMemos();
+    const memos = await this.#memoRepo.getAllMemos();
 
-      if (memos.length === 0) {
-        console.log("No memos found.");
-        await this.#promptToAddNewMemo();
-        return;
-      }
-    } catch (err) {
-      console.error(
-        "Failed to fetch memos due to database error:",
-        err.message,
-      );
+    if (memos.length === 0) {
+      console.log("No memos found.");
+      await this.#promptToAddNewMemo();
       return;
     }
 
@@ -135,33 +95,22 @@ export default class MemoApp {
           choices,
         },
       ]);
-
-      console.log("Content:");
       console.log(selectedMemo.content);
     } catch (err) {
       if (err.isTtyError || err.message.includes("User force closed")) {
         console.log("Prompt was canceled by the user.");
       } else {
-        console.error("Error during memo selection:", err.message);
+        throw err;
       }
     }
   }
 
   async #deleteMemo() {
-    let memos;
-    try {
-      memos = await this.#memoRepo.getAllMemos();
+    const memos = await this.#memoRepo.getAllMemos();
 
-      if (memos.length === 0) {
-        console.log("No memos found.");
-        await this.#promptToAddNewMemo();
-        return;
-      }
-    } catch (err) {
-      console.error(
-        "Failed to fetch memos due to database error:",
-        err.message,
-      );
+    if (memos.length === 0) {
+      console.log("No memos found.");
+      await this.#promptToAddNewMemo();
       return;
     }
 
@@ -179,14 +128,13 @@ export default class MemoApp {
           choices,
         },
       ]);
-
       await this.#memoRepo.deleteMemo(selectedMemo);
       console.log("Memo deleted successfully");
     } catch (err) {
       if (err.isTtyError || err.message.includes("User force closed")) {
         console.log("Prompt was canceled by the user.");
       } else {
-        console.error("Error during memo deletion:", err.message);
+        throw err;
       }
     }
   }
@@ -211,8 +159,25 @@ export default class MemoApp {
       if (err.isTtyError || err.message.includes("User force closed")) {
         console.log("Prompt was canceled by the user.");
       } else {
-        console.error("Error during prompt for new memo:", err.message);
+        throw err;
       }
     }
+  }
+
+  async #getInputFromUser() {
+    return new Promise((resolve, reject) => {
+      let input = "";
+      process.stdin.on("data", (data) => {
+        input += data;
+      });
+      process.stdin.on("end", () => {
+        process.stdin.pause();
+        resolve(input);
+      });
+      process.stdin.on("error", (err) => {
+        reject(err);
+      });
+      process.stdin.resume();
+    });
   }
 }
