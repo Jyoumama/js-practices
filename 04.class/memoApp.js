@@ -46,7 +46,11 @@ export default class MemoApp {
     try {
       content = await this.#getInputFromUser();
     } catch (err) {
-      throw new Error("Failed to get user input: " + err.message);
+      if (err.message.includes("Failed to get user input")) {
+        console.log("Failed to get user input:", err.message);
+      } else {
+        throw err;
+      }
     }
 
     if (content.trim() === "") {
