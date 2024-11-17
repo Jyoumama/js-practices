@@ -33,7 +33,10 @@ export default class MemoApp {
         return;
       }
     } catch (err) {
-      console.error("Critical error occurred:", err.message);
+      console.error(
+        "Critical error occurred:",
+        err instanceof Error ? err.message : err,
+      );
     }
   }
 
@@ -46,8 +49,12 @@ export default class MemoApp {
     try {
       content = await this.#getInputFromUser();
     } catch (err) {
-      if (err.message.includes("Failed to get user input")) {
-        console.log("Failed to get user input:", err.message);
+      if (
+        err instanceof Error &&
+        err.message.includes("Failed to get user input")
+      ) {
+        console.log("Failed to get user input.Please try again.");
+        return;
       } else {
         throw err;
       }
@@ -101,8 +108,12 @@ export default class MemoApp {
       ]);
       console.log(selectedMemo.content);
     } catch (err) {
-      if (err.isTtyError || err.message.includes("User force closed")) {
+      if (
+        err instanceof Error &&
+        (err.isTtyError || err.message.includes("User force closed"))
+      ) {
         console.log("Prompt was canceled by the user.");
+        return;
       } else {
         throw err;
       }
@@ -123,8 +134,9 @@ export default class MemoApp {
       value: memo,
     }));
 
+    let selectedMemo;
     try {
-      const { selectedMemo } = await inquirer.prompt([
+      const { selectedMemo: selected } = await inquirer.prompt([
         {
           type: "list",
           name: "selectedMemo",
@@ -132,20 +144,28 @@ export default class MemoApp {
           choices,
         },
       ]);
-      await this.#memoRepo.deleteMemo(selectedMemo);
-      console.log("Memo deleted successfully");
+      selectedMemo = selected;
     } catch (err) {
-      if (err.isTtyError || err.message.includes("User force closed")) {
+      if (
+        err instanceof Error &&
+        (err.isTtyError || err.message.includes("User force closed"))
+      ) {
         console.log("Prompt was canceled by the user.");
+        return;
       } else {
         throw err;
       }
     }
+
+    await this.#memoRepo.deleteMemo(selectedMemo);
+    console.log("Memo deleted successfully");
   }
 
   async #promptToAddNewMemo() {
+    let shouldAddNewMemo;
+
     try {
-      const { shouldAddNewMemo } = await inquirer.prompt([
+      const { shouldAddNewMemo: shouldAdd } = await inquirer.prompt([
         {
           type: "confirm",
           name: "shouldAddNewMemo",
@@ -153,18 +173,23 @@ export default class MemoApp {
           default: false,
         },
       ]);
-
-      if (shouldAddNewMemo) {
-        await this.#addMemo();
-      } else {
-        console.log("No memos were added.");
-      }
+      shouldAddNewMemo = shouldAdd;
     } catch (err) {
-      if (err.isTtyError || err.message.includes("User force closed")) {
+      if (
+        err instanceof Error &&
+        (err.isTtyError || err.message.includes("User force closed"))
+      ) {
         console.log("Prompt was canceled by the user.");
+        return;
       } else {
         throw err;
       }
+    }
+
+    if (shouldAddNewMemo) {
+      await this.#addMemo();
+    } else {
+      console.log("No memos were added.");
     }
   }
 
