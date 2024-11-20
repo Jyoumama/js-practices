@@ -35,7 +35,9 @@ export default class MemoApp {
     } catch (err) {
       console.error(
         "Critical error occurred:",
-        err instanceof Error ? err.message : err,
+        err && typeof err === "object" && "message" in err
+          ? err.message
+          : String(err),
       );
     }
   }
@@ -53,7 +55,7 @@ export default class MemoApp {
         err instanceof Error &&
         err.message.includes("Failed to get user input")
       ) {
-        console.log("Failed to get user input.Please try again.");
+        console.log("Failed to get user input. Please try again.");
         return;
       } else {
         throw err;
@@ -136,7 +138,7 @@ export default class MemoApp {
 
     let selectedMemo;
     try {
-      const { selectedMemo: selected } = await inquirer.prompt([
+      const promptResult = await inquirer.prompt([
         {
           type: "list",
           name: "selectedMemo",
@@ -144,7 +146,7 @@ export default class MemoApp {
           choices,
         },
       ]);
-      selectedMemo = selected;
+      selectedMemo = promptResult.selectedMemo;
     } catch (err) {
       if (
         err instanceof Error &&
@@ -163,9 +165,8 @@ export default class MemoApp {
 
   async #promptToAddNewMemo() {
     let shouldAddNewMemo;
-
     try {
-      const { shouldAddNewMemo: shouldAdd } = await inquirer.prompt([
+      const promptResult = await inquirer.prompt([
         {
           type: "confirm",
           name: "shouldAddNewMemo",
@@ -173,7 +174,7 @@ export default class MemoApp {
           default: false,
         },
       ]);
-      shouldAddNewMemo = shouldAdd;
+      shouldAddNewMemo = promptResult.shouldAddNewMemo;
     } catch (err) {
       if (
         err instanceof Error &&
