@@ -33,12 +33,7 @@ export default class MemoApp {
         return;
       }
     } catch (err) {
-      console.error(
-        "Critical error occurred:",
-        err && typeof err === "object" && "message" in err
-          ? err.message
-          : String(err),
-      );
+      console.error("Critical error occurred:", err?.message || String(err));
     }
   }
 
